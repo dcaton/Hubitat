@@ -1,0 +1,13 @@
+{
+  "author": "Don Caton",
+  "gitHubUrl": "https://github.com/dcaton",
+  "packages": [
+		{
+			"name": "Sunsa Wands",
+			"category": "Convenience",
+			"tags": "Window Coverings",
+			"location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/packageManifest.json",
+			"description": "Driver for Sunsa Wands"
+		}
+	]
+}

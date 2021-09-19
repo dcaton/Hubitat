@@ -35,7 +35,7 @@ import groovy.transform.Field
 import java.net.*;
 
 metadata {
-    definition (name: "Sunsa Wands", namespace: "dcaton-sunsawands", author: "Don Caton", importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat-Sunsa-Wands/main/SunsaWands.groovy") {
+    definition (name: "Sunsa Wands", namespace: "dcaton-sunsawands", author: "Don Caton", importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWands.groovy") {
         capability "Initialize"
         capability "Refresh"
     }
