@@ -33,7 +33,7 @@
 def version() {"v1.0.0"}
 
 metadata {
-    definition(name: "Sunsa Wand", namespace: "dcaton-sunsawands", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsChild.groovy") {
+    definition(name: "Sunsa Wand", namespace: "dcaton.sunsawands", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsChild.groovy") {
         capability "WindowBlind"
         capability "Battery"
         capability "TemperatureMeasurement"

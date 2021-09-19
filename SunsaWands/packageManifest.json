@@ -2,22 +2,24 @@
     "packageName": "Sunsa Wands",
     "author": "Don Caton",
     "version": "1.0",
-    "minimumHEVersion": "0.0",
+    "minimumHEVersion": "2.2.1",
     "dateReleased": "2021-09-19",
     "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat-Sunsa-Wands/main/LICENSE",
-	"releaseNotes": "https://raw.githubusercontent.com/dcaton/Hubitat-Sunsa-Wands/main/README.md",
+	"releaseNotes": "Initial release",
+	"documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat-Sunsa-Wands/main/README.md",
+	"communityLink": "",
 	"drivers": [
     {
       "id": "c3c4553e-e56f-4910-961a-7c42bca11744",
       "name": "Sunsa Wands",
-      "namespace": "dcaton-sunsawands",
+      "namespace": "dcaton.sunsawands",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsChild.groovy",
       "required": true
     },
     {
       "id": "7cf17981-843a-448a-9667-4b3fdb0414e2",
       "name": "Sunsa Wand",
-      "namespace": "dcaton-sunsawands",
+      "namespace": "dcaton.sunsawands",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWands.groovy",
       "required": true
     }
