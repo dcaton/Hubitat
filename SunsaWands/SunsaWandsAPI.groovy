@@ -66,7 +66,6 @@ def installed() {
 def uninstalled() {
     logTrace("uninstalled()");
     unschedule();
-    interfaces.mqtt.disconnect();
 }
 
 def updated() {
