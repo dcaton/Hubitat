@@ -88,7 +88,6 @@ def initialize() {
     unschedule()
     state.clear()
     state.version = version()
-    state.reconnectDelay = 2;
     refresh();
     
 }
