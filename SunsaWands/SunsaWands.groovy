@@ -164,7 +164,7 @@ private def CreateChildDevice(Data){
             currentchild = addChildDevice("dcaton-sunsawands", "Sunsa Wand", dni, [name: "${Data.Name}", label: "${Data.Name}", isComponent: true])
         }
         currentchild.updateDataValue("idDevice", Data.idDevice.toString());
-        currentchild._InitStates( Data.Position, Data.batteryPercentage, /* Data.temperature */ 0 );
+        currentchild._InitStates( Data );
     }
     catch (e) {
         logError("Error creating child device ${dni}", e);

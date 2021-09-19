@@ -37,6 +37,7 @@ metadata {
         capability "WindowBlind"
         capability "Battery"
         capability "TemperatureMeasurement"
+		capability "IlluminanceMeasurement"
     }
 }
 
@@ -76,16 +77,27 @@ void setTiltLevel(tilt) {
      parent.setTiltLevel(getDataValue("idDevice"), tilt);
 }
 
-def void _InitStates(tilt, battery, temperature) {
-    state.battery = battery;
-    sendEvent( name: "battery", value: battery, isStateChanged: true );
-    state.temperature = temperature;
-    sendEvent( name: "temperature", value: temperature, isStateChanged: true );
-    _UpdateTiltLevel(tilt);
+def void _InitStates(Data) {
+    state.battery = Data.batteryPercentage;
+    sendEvent( name: "battery", value: Data.batteryPercentage, isStateChanged: true );
+	
+	// light sensor not yet supported in current API
+    //state.illuminance = ?;
+    //sendEvent( name: "illuminance", value: ?, isStateChanged: true );
+	
+	// temp not yet supported in current API
+    //state.temperature = ?;
+    //sendEvent( name: "temperature", value: ?, isStateChanged: true );
+	
+    _UpdateTiltLevel(Data.Position);
 }
 
 def void _UpdateTiltLevel(tilt) {
+
+    // API doesn't support starting and stopping wand, so "opening" and "closing" values are never set
+	
     // windowShade - ENUM ["opening", "partially open", "closed", "open", "closing", "unknown"]
+	
     if (state.tilt != tilt ) {
         state.tilt = tilt;
         sendEvent( name: "tilt", value: tilt, isStateChanged: true );
