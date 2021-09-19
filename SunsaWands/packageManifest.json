@@ -11,16 +11,16 @@
 	"drivers": [
     {
       "id": "c3c4553e-e56f-4910-961a-7c42bca11744",
-      "name": "Sunsa Wands",
+      "name": "Sunsa Wand",
       "namespace": "dcaton.sunsawands",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsChild.groovy",
       "required": true
     },
     {
       "id": "7cf17981-843a-448a-9667-4b3fdb0414e2",
-      "name": "Sunsa Wand",
+      "name": "Sunsa Wands API",
       "namespace": "dcaton.sunsawands",
-      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWands.groovy",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsAPI.groovy",
       "required": true
     }
   ]
