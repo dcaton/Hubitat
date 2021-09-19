@@ -142,6 +142,9 @@ private def devicesResponse( resp, data ){
         case 400:
              logError( "Invalid id" )
              break 
+        case 401:
+             logError( "HTTP 401 error connecting to Sunsa API. Check your userid.");
+             break 
         case 404:
             logError( "User not found" )
             break   
@@ -161,7 +164,7 @@ private def CreateChildDevice(Data){
         def currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
         if (currentchild == null) {
             log.debug "Creating ${Data.Name} child for ${dni}"
-            currentchild = addChildDevice("dcaton-sunsawands", "Sunsa Wand", dni, [name: "${Data.Name}", label: "${Data.Name}", isComponent: true])
+            currentchild = addChildDevice("dcaton.sunsawands", "Sunsa Wand", dni, [name: "${Data.Name}", label: "${Data.Name}", isComponent: true])
         }
         currentchild.updateDataValue("idDevice", Data.idDevice.toString());
         currentchild._InitStates( Data );
