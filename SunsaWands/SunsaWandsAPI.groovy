@@ -101,7 +101,7 @@ def refresh() {
         logError( "Api Key not configured" );
         return
     }
-	
+    
     try {
         def Params
         Params = [ uri: "https://sunsahomes.com/api/public/${userid}/devices?publicApiKey=${apikey}", contentType: "application/json" ]
@@ -147,13 +147,13 @@ private def devicesResponse( resp, data ){
             logError( "User not found" )
             break   
         default:
-    		logError( "Error connecting to Sunsa api: ${ resp.getStatus() }" )
+            logError( "Error connecting to Sunsa api: ${ resp.getStatus() }" )
             break
-	}
+    }
 }
 
 private def CreateChildDevice(Data){
-	log.debug "Adding Child Sunsa Wand Device"
+    log.debug "Adding Child Sunsa Wand Device"
     logInfo( "json data: ${ Data }" );
     
     def dni = "${device.deviceNetworkId}-${Data.idDevice}"; 
@@ -225,9 +225,9 @@ private def setTiltLevelResponse( resp, data ){
             logError( "User not found" )
             break   
         default:
-    		    logError( "Error connecting to Sunsa api: ${ resp.getStatus() }" )
+                logError( "Error connecting to Sunsa api: ${ resp.getStatus() }" )
             break
-	}
+    }
 }
 
 //

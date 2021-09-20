@@ -35,10 +35,10 @@ def version() {"v1.0.1"}
 metadata {
     definition(name: "Sunsa Wand", namespace: "dcaton.sunsawands", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsChild.groovy") {
         capability "WindowBlind"
-		capability "WindowShade"  // shouldn't be necessary, but see https://community.hubitat.com/t/window-blind-missing-from-rm-capability-list/79809/15
+        capability "WindowShade"  // shouldn't be necessary, but see https://community.hubitat.com/t/window-blind-missing-from-rm-capability-list/79809/15
         capability "Battery"
         capability "TemperatureMeasurement"
-		capability "IlluminanceMeasurement"
+        capability "IlluminanceMeasurement"
     }
 }
 
@@ -48,7 +48,7 @@ preferences {
 
 void installed() {
     parent.logInfo "Sunsa Wand ${device.deviceNetworkId} installed..."
-	updated()
+    updated()
 }
 
 void uninstalled() {
@@ -81,24 +81,24 @@ void setTiltLevel(tilt) {
 def void _InitStates(Data) {
     state.battery = Data.batteryPercentage;
     sendEvent( name: "battery", value: Data.batteryPercentage, isStateChanged: true );
-	
-	// light sensor not yet supported in current API
+    
+    // light sensor not yet supported in current API
     //state.illuminance = ?;
     //sendEvent( name: "illuminance", value: ?, isStateChanged: true );
-	
-	// temp not yet supported in current API
+    
+    // temp not yet supported in current API
     //state.temperature = ?;
     //sendEvent( name: "temperature", value: ?, isStateChanged: true );
-	
+    
     _UpdateTiltLevel(Data.Position);
 }
 
 def void _UpdateTiltLevel(tilt) {
 
     // API doesn't support starting and stopping wand, so "opening" and "closing" values are never set
-	
+    
     // windowShade - ENUM ["opening", "partially open", "closed", "open", "closing", "unknown"]
-	
+    
     if (state.tilt != tilt ) {
         state.tilt = tilt;
         sendEvent( name: "tilt", value: tilt, isStateChanged: true );
