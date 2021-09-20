@@ -5,7 +5,7 @@
     "minimumHEVersion": "2.2.1",
     "dateReleased": "2021-09-19",
     "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/LICENSE",
-	"releaseNotes": "Initial release",
+	"releaseNotes": "Workaround for issue with Rule Manager",
 	"documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/README.md",
 	"communityLink": "",
 	"drivers": [
