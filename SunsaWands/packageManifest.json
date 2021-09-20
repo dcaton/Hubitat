@@ -4,9 +4,9 @@
     "version": "1.0",
     "minimumHEVersion": "2.2.1",
     "dateReleased": "2021-09-19",
-    "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat-Sunsa-Wands/main/LICENSE",
+    "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/LICENSE",
 	"releaseNotes": "Initial release",
-	"documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat-Sunsa-Wands/main/README.md",
+	"documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/README.md",
 	"communityLink": "",
 	"drivers": [
     {
