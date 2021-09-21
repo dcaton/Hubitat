@@ -30,7 +30,7 @@
 *
 */
 
-def version() {"v1.0.1"}
+def version() {"v1.0.2"}
 
 metadata {
     definition(name: "Sunsa Wand", namespace: "dcaton.sunsawands", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsChild.groovy") {
@@ -79,15 +79,12 @@ void setTiltLevel(tilt) {
 }
 
 def void _InitStates(Data) {
-    state.battery = Data.batteryPercentage;
     sendEvent( name: "battery", value: Data.batteryPercentage, isStateChanged: true );
     
     // light sensor not yet supported in current API
-    //state.illuminance = ?;
     //sendEvent( name: "illuminance", value: ?, isStateChanged: true );
     
     // temp not yet supported in current API
-    //state.temperature = ?;
     //sendEvent( name: "temperature", value: ?, isStateChanged: true );
     
     _UpdateTiltLevel(Data.Position);
@@ -100,7 +97,6 @@ def void _UpdateTiltLevel(tilt) {
     // windowShade - ENUM ["opening", "partially open", "closed", "open", "closing", "unknown"]
     
     if (state.tilt != tilt ) {
-        state.tilt = tilt;
         sendEvent( name: "tilt", value: tilt, isStateChanged: true );
         
         def shadeval;
@@ -117,7 +113,6 @@ def void _UpdateTiltLevel(tilt) {
                 break;
         }
         
-        state.windowShade = shadeval;
         sendEvent( name: "windowShade", value: shadeval, isStateChanged: true );
     }
 }
