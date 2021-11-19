@@ -44,9 +44,18 @@ https://app.swaggerhub.com/apis-docs/Sunsa/Sunsa/1.0.4
 Release History
 ===============
 
-v 1.0.1    09/20/21
+v 1.0.3    11/19/21
 
-    Temporarialy added WIndowShade capability to child driver to work around
+    Initialize no longer deletes existing devices so rules using devices are not broke.
+    
+    Parent driver now supports WindowBlind capability.  Open, Close and SetTiltLevel
+    commands send the command to all blinds.  Only useful if you have more than one, of course.
+
+    Remove WindowShade capability from child driver.  Requires HE version 2.2.9.130
+
+v 1.0.2    09/20/21
+
+    Temporarialy added WindowShade capability to child driver to work around
     Window Blind not showing up in Rule Manager capabilities list.
 
 v 1.0.0    09/19/21

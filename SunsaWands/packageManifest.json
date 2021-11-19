@@ -1,11 +1,11 @@
 {
     "packageName": "Sunsa Wands",
     "author": "Don Caton",
-    "version": "1.0.2",
-    "minimumHEVersion": "2.2.1",
-    "dateReleased": "2021-09-19",
+    "version": "1.0.3",
+    "minimumHEVersion": "2.2.9.130",
+    "dateReleased": "2021-11-19",
     "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/LICENSE",
-	"releaseNotes": "Workaround for issue with Rule Manager",
+	"releaseNotes": "Bug fixes, added open/close/setTiltLevel for all blinds in parent driver",
 	"documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/README.md",
 	"communityLink": "",
 	"drivers": [

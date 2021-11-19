@@ -27,7 +27,7 @@
 *
 */
 
-def version() {"v1.0.2"}
+def version() {"v1.0.3"}
 
 import hubitat.helper.InterfaceUtils
 import groovy.json.JsonSlurper
@@ -38,6 +38,8 @@ metadata {
     definition (name: "Sunsa Wands API", namespace: "dcaton.sunsawands", author: "Don Caton", importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsAPI.groovy") {
         capability "Initialize"
         capability "Refresh"
+        capability "WindowBlind"
+
     }
 }
 
@@ -111,28 +113,47 @@ def refresh() {
     }
 }
 
-def open(idDevice){
-    logTrace("open(${idDevice})");
-    setPosition(idDevice, 0);
+void open() {
+    getChildDevices().each { it.open(); }
 }
 
-def close(idDevice){
-    setPosition(idDevice, -100);
+void close() {
+    getChildDevices().each { it.close(); }
+}
+
+void setPosition(position) { log.warn "setPosition() not applicable to this device"; }
+
+void startPositionChange(direction) { log.warn "startPositionChange() not applicable to this device"; }
+
+void stopPositionChange() { log.warn "stopPositionChange() not applicable to this device"; }
+
+void setTiltLevel(tilt) {
+    getChildDevices().each { it.setTiltLevel(tilt); }
 }
 
 private def devicesResponse( resp, data ){
     switch( resp.getStatus() ){
         case 200:
+            device.deviceNetworkId = "sunsa-${userid}"
             logInfo( "response: ${ resp.data }" )
             if( resp.data != null ){
                 Data = parseJson( resp.data );
                 logInfo( "json data: ${ Data }" );
                 
-                getChildDevices().each { deleteChildDevice(it.deviceNetworkId); }    
-                
                 for( int i = 0; i < Data.devices.size(); i++ ){
                     CreateChildDevice(Data.devices[i]);
                 }
+                
+                logInfo( "Searching for orphaned devices..." );
+                
+                getChildDevices().each {                
+                    def childDeviceId = it.getDataValue("idDevice");
+                    if (Data.devices.find() { it.idDevice = childDeviceId } == null ) {
+                        logInfo( "Deleting orphaned device ${it.deviceNetworkId} ${it.idDevice}" );
+                        deleteChildDevice(it.deviceNetworkId);    
+                    }
+                }
+                
             } else {
                 logError( "No data returned by Sunsa" )
             }
@@ -153,8 +174,7 @@ private def devicesResponse( resp, data ){
 }
 
 private def CreateChildDevice(Data){
-    log.debug "Adding Child Sunsa Wand Device"
-    logInfo( "json data: ${ Data }" );
+    log.debug "json data: ${ Data }"
     
     def dni = "${device.deviceNetworkId}-${Data.idDevice}"; 
     try {

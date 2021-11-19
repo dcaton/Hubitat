@@ -30,12 +30,11 @@
 *
 */
 
-def version() {"v1.0.2"}
+def version() {"v1.0.3"}
 
 metadata {
     definition(name: "Sunsa Wand", namespace: "dcaton.sunsawands", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsChild.groovy") {
         capability "WindowBlind"
-        capability "WindowShade"  // shouldn't be necessary, but see https://community.hubitat.com/t/window-blind-missing-from-rm-capability-list/79809/15
         capability "Battery"
         capability "TemperatureMeasurement"
         capability "IlluminanceMeasurement"
