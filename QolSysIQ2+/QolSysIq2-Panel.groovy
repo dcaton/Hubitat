@@ -32,7 +32,7 @@
 *   @crazeeeyez
 *   @Smwoodward
 *
-*  My apoloigies if I have inadvertently omitted anyone.
+*  My apologies if I have inadvertently omitted anyone.
 *
 *
 *  MIT License
@@ -61,7 +61,6 @@ def version() { 'v0.1.0' }
 
 import groovy.json.JsonSlurper
 import groovy.transform.Field
-import java.net.*
 
 metadata {
     definition (name: 'QolSys IQ2+ Alarm Panel', namespace: 'dcaton-qolsysiq2', author: 'Don Caton', importUrl: '') {
@@ -212,13 +211,14 @@ def socketStatus(String message) {
     logError( "socketStatus: ${message}")
 }
 
-
 def parse(message) {
     if (message.length() > 0) {
 
         logDebug("parse() received ${message.length()} bytes : '${message}'")
 
         if (message == '41434B0A') { // "ACK" + linefeed
+            // This is sent by the panel when a command has been received
+            // There is nothing to do in response to this
             logDebug("'ACK' received")
         }
         else {
@@ -227,7 +227,7 @@ def parse(message) {
                 message = partialMessage + message
             }
             def rdB = hubitat.helper.HexUtils.hexStringToByteArray(message)
-    //logDebug("toByteArray: ${rdB}")
+            logDebug("toByteArray: ${rdB}")
 
             def asciiData = new String(rdB)
             logDebug("toString: ${asciiData}")
@@ -335,14 +335,12 @@ private setHEMode(event, mode) {
 
 private sendCommand(String s) {
     logDebug("sendCommand ${s}")
-    //interfaces.mqtt.publish("qolsysiq2-in", s)
-
     byte[] bytes = new byte[s.length()]
     int x = 0
     s.each { bytes[x++] = it }
-    def wrStr = hubitat.helper.HexUtils.byteArrayToHexString(bytes)
-    logDebug("sendCommand ${wrStr}")
-    interfaces.rawSocket.sendMessage(wrStr)
+    def sendStr = hubitat.helper.HexUtils.byteArrayToHexString(bytes)
+    logDebug("sendCommand ${sendStr}")
+    interfaces.rawSocket.sendMessage(sendStr)
 }
 
 private processSummary(payload) {
