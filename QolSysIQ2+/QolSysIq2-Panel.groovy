@@ -163,7 +163,7 @@ def initialize() {
         }
 
         interfaces.rawSocket.close()
-        interfaces.rawSocket.connect("${panelip}", 12345, 'byteInterface': true, 'secureSocket': true, 'ignoreSSLIssues': true)
+        interfaces.rawSocket.connect("${panelip}", 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true)
     }
     catch (e) {
         logError( "initialize error: ${e.message}" )
@@ -183,6 +183,9 @@ def armStay( String partition_id, BigDecimal user_code = 0 ) {
         logWarn( 'Alarm panel access token not configured.  You can not arm or disarm the system from Hubitat until the access token is configured.', true )
         return
     }
+    
+    def msg = '{ "version": 1, "source": "C4", "partition_id":' + partition_id + ', "action": "ARMING", "arming_type": "ARM_STAY", "nonce": "", "version_key": 1, "delay": 0, "bypass": false, "token": "' + accessToken + '" }'
+    sendCommand(msg)    
 }
 
 def armAway( String partition_id, BigDecimal user_code = 0 ) {
@@ -192,15 +195,26 @@ def armAway( String partition_id, BigDecimal user_code = 0 ) {
         logWarn( 'Alarm panel access token not configured.  You can not arm or disarm the system from Hubitat until the access token is configured.', true )
         return
     }
+
+    def msg = '{ "version": 1, "source": "C4", "partition_id":' + partition_id + ', "action": "ARMING", "arming_type": "ARM_AWAY", "nonce": "", "version_key": 1, "delay": 0, "bypass": false, "token": "' + accessToken + '" }'
+    sendCommand(msg)   
 }
 
 def disarm( String partition_id, BigDecimal user_code ) {
     logTrace( "disarm partition ${partition_id} usercode ${user_code}" )
 
     if (!accessToken) {
-        logWarn( 'Alarm panel access token not configured.  You can not arm or disarm the system from Hubitat until the access token is configured.', true )
+        logWarn( 'Alarm panel access token not configured.  You cannot arm the system from Hubitat until the access token is configured.', true )
         return
     }
+
+    if (!user_code) {
+        logWarn( 'Alarm panel user code not specified.  You cannot disarm the system without a user code.', true )
+        return
+    }
+
+    def msg = '{ "version": 1, "source": "C4", "partition_id":' + partition_id + ', "action": "ARMING", "arming_type": "DISARM", "usercode": "5415","nonce": "", "version_key": 1, "delay": 0, "bypass": false, "token": "' + accessToken + '" }'
+    sendCommand(msg)   
 }
 
 //
@@ -335,12 +349,7 @@ private setHEMode(event, mode) {
 
 private sendCommand(String s) {
     logDebug("sendCommand ${s}")
-    byte[] bytes = new byte[s.length()]
-    int x = 0
-    s.each { bytes[x++] = it }
-    def sendStr = hubitat.helper.HexUtils.byteArrayToHexString(bytes)
-    logDebug("sendCommand ${sendStr}")
-    interfaces.rawSocket.sendMessage(sendStr)
+    interfaces.rawSocket.sendMessage(s)
 }
 
 private processSummary(payload) {
