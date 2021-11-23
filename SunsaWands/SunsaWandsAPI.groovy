@@ -27,7 +27,7 @@
 *
 */
 
-def version() {"v1.0.3"}
+def version() {"v1.0.4"}
 
 import hubitat.helper.InterfaceUtils
 import groovy.json.JsonSlurper
@@ -39,7 +39,7 @@ metadata {
         capability "Initialize"
         capability "Refresh"
         capability "WindowBlind"
-
+        capability "WindowShade"
     }
 }
 
@@ -178,13 +178,17 @@ private def CreateChildDevice(Data){
     
     def dni = "${device.deviceNetworkId}-${Data.idDevice}"; 
     try {
-        log.debug "Trying to create child device ${Data.Name} dni: ${dni} if it doesn't already exist";
+        log.debug "Trying to create child device ${Data.name} dni: ${dni} if it doesn't already exist";
         def currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
         if (currentchild == null) {
-            log.debug "Creating ${Data.Name} child for ${dni}"
-            currentchild = addChildDevice("dcaton.sunsawands", "Sunsa Wand", dni, [name: "${Data.Name}", label: "${Data.Name}", isComponent: true])
+            log.debug "Creating ${Data.name} child for ${dni}"
+            currentchild = addChildDevice("dcaton.sunsawands", "Sunsa Wand", dni, [name: "${Data.name}", label: "${Data.name}", isComponent: true])
         }
         currentchild.updateDataValue("idDevice", Data.idDevice.toString());
+        currentchild.updateDataValue("blindType", Data.blindType.text);
+        currentchild.updateDataValue("blindTypeValue", Data.blindType.value.toString());
+        currentchild.updateDataValue("defaultSmartHomeDirection", Data.defaultSmartHomeDirection.text);
+        currentchild.updateDataValue("defaultSmartHomeDirectionValue", Data.defaultSmartHomeDirection.value.toString());
         currentchild._InitStates( Data );
     }
     catch (e) {

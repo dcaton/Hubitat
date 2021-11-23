@@ -30,7 +30,7 @@
 *
 */
 
-def version() {"v1.0.3"}
+def version() {"v1.0.4"}
 
 metadata {
     definition(name: "Sunsa Wand", namespace: "dcaton.sunsawands", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsChild.groovy") {

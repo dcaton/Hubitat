@@ -1,14 +1,14 @@
 {
     "packageName": "Sunsa Wands",
     "author": "Don Caton",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "minimumHEVersion": "2.2.9.130",
-    "dateReleased": "2021-11-19",
+    "dateReleased": "2021-22-19",
     "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/LICENSE",
-	"releaseNotes": "Bug fixes, added open/close/setTiltLevel for all blinds in parent driver",
-	"documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/README.md",
-	"communityLink": "",
-	"drivers": [
+    "releaseNotes": "Bug fix, restored WindowShade capability until omission is fixed in HE",
+    "documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/README.md",
+    "communityLink": "",
+    "drivers": [
     {
       "id": "c3c4553e-e56f-4910-961a-7c42bca11744",
       "name": "Sunsa Wand",
