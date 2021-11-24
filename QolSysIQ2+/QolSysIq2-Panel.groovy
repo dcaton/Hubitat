@@ -68,18 +68,14 @@ metadata {
         capability 'Refresh'
         capability 'Actuator'
 
-        command 'armStay', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'user_code', type: 'NUMBER', description: 'User code (optional if panel is configured to arm without a user code' ]]
-        command 'armAway', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'user_code', type: 'NUMBER', description: 'User code (optional if panel is configured to arm without a user code' ]]
+        command 'armStay', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'bypass', type: 'ENUM', description: 'Bypass open or faulted sensors', constraints: ['No', 'Yes']], [name: 'user_code', type: 'NUMBER', description: 'User code (optional if panel is configured to arm without a user code' ]]
+        command 'armAway', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'bypass', type: 'ENUM', description: 'Bypass open or faulted sensors', constraints: ['No', 'Yes']], [name:'exitDelay*', type: 'NUMBER', description: 'Exit delay in seconds'], [name: 'user_code', type: 'NUMBER', description: 'User code (optional if panel is configured to arm without a user code' ]]
         command 'disarm', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'user_code*', type: 'NUMBER', description: 'User code to disarm' ]]
 
         attribute 'Alarm_Mode_Partition_0', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
-        attribute 'Secure_Arm_Partition_0', 'String'
         attribute 'Alarm_Mode_Partition_1', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
-        attribute 'Secure_Arm_Partition_1', 'String'
         attribute 'Alarm_Mode_Partition_2', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
-        attribute 'Secure_Arm_Partition_2', 'String'
         attribute 'Alarm_Mode_Partition_3', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
-        attribute 'Secure_Arm_Partition_3', 'String'
     }
 }
 
@@ -162,8 +158,9 @@ def initialize() {
             refresh()
         }
 
-        interfaces.rawSocket.close()
-        interfaces.rawSocket.connect("${panelip}", 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true)
+        interfaces.rawSocket.close();
+        partialMessage = '';
+        interfaces.rawSocket.connect("${panelip}", 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true, 'convertReceivedDataToString': true);
     }
     catch (e) {
         logError( "initialize error: ${e.message}" )
@@ -176,45 +173,79 @@ def refresh() {
     sendCommand(msg)
 }
 
-def armStay( String partition_id, BigDecimal user_code = 0 ) {
-    logTrace( "armStay partition ${partition_id} usercode ${user_code}" )
+def armStay( String partition_id, String bypass, BigDecimal user_code = 0 ) {
+    logTrace( "armStay partition ${partition_id}" )
 
-    if (!accessToken) {
-        logWarn( 'Alarm panel access token not configured.  You can not arm or disarm the system from Hubitat until the access token is configured.', true )
-        return
+    if (checkSecureArming(partition_id, user_code) && checkAccessToken() && checkPartition(partition_id)) {
+        def msg = _createArmCommand( partition_id, "ARM_STAY", user_code, 0, bypass);
+        sendCommand(msg);
     }
-    
-    def msg = '{ "version": 1, "source": "C4", "partition_id":' + partition_id + ', "action": "ARMING", "arming_type": "ARM_STAY", "nonce": "", "version_key": 1, "delay": 0, "bypass": false, "token": "' + accessToken + '" }'
-    sendCommand(msg)    
 }
 
-def armAway( String partition_id, BigDecimal user_code = 0 ) {
-    logTrace( "armAway partition ${partition_id} usercode ${user_code}" )
+def armAway( String partition_id, String bypass, BigDecimal delay, BigDecimal user_code = 0 ) {
+    logTrace( "armAway partition ${partition_id}" )
 
-    if (!accessToken) {
-        logWarn( 'Alarm panel access token not configured.  You can not arm or disarm the system from Hubitat until the access token is configured.', true )
-        return
+    if (checkSecureArming(partition_id, user_code) && checkAccessToken() && checkPartition(partition_id)) {
+        def msg = _createArmCommand( partition_id, "ARM_AWAY", user_code, delay, bypass);
+        sendCommand(msg);
     }
-
-    def msg = '{ "version": 1, "source": "C4", "partition_id":' + partition_id + ', "action": "ARMING", "arming_type": "ARM_AWAY", "nonce": "", "version_key": 1, "delay": 0, "bypass": false, "token": "' + accessToken + '" }'
-    sendCommand(msg)   
 }
 
 def disarm( String partition_id, BigDecimal user_code ) {
     logTrace( "disarm partition ${partition_id} usercode ${user_code}" )
 
-    if (!accessToken) {
-        logWarn( 'Alarm panel access token not configured.  You cannot arm the system from Hubitat until the access token is configured.', true )
-        return
-    }
-
     if (!user_code) {
-        logWarn( 'Alarm panel user code not specified.  You cannot disarm the system without a user code.', true )
+        logError( 'Alarm panel user code not specified.  You cannot disarm the system without a user code.', true )
         return
     }
 
-    def msg = '{ "version": 1, "source": "C4", "partition_id":' + partition_id + ', "action": "ARMING", "arming_type": "DISARM", "usercode": "5415","nonce": "", "version_key": 1, "delay": 0, "bypass": false, "token": "' + accessToken + '" }'
-    sendCommand(msg)   
+    if (checkAccessToken() && checkPartition(partition_id)) {
+        def msg = _createArmCommand( partition_id, "DISARM", user_code);
+        sendCommand(msg);
+    }
+}
+
+private boolean checkAccessToken() {
+    if (!accessToken) {
+        logError( 'Alarm panel access token not configured.  You can not arm or disarm the system from Hubitat until the access token is configured.', true )
+        return false;
+    }
+    
+    return true;
+}
+
+private boolean checkSecureArming(String partition_id, BigDecimal user_code = 0) {
+     if (getDataValue( "Secure_Arm_Partition_${partition_id}" ) && user_code == 0) {
+        logError( "Secure arming enabled for partition ${partition_id}.  User code must be specified in order to arm panel.", true )
+        return false;
+    }
+    
+    return true;
+}
+
+private boolean checkPartition(String partition_id) {
+    if (partition_id.toInteger() >= getDataValue( 'Partitions' ).toInteger()) {
+        logError( "Partition ${partition_id} is not enabled in the alarm panel.", true )
+        return false;
+    }
+    
+    return true;
+}
+
+private String _createArmCommand( String partition_id, String arming_type, BigDecimal user_code, BigDecimal delay = 0, String bypass = "" ) {
+    def command = '{ "version": 1, "source": "C4", "action": "ARMING", "nonce": "", "version_key": 1, "token": "' + accessToken + '", "partition_id":' + partition_id.toString() + '", "arming_type": "' + arming_type + '", ' ;
+    
+    if (user_code) {
+        command += '"usercode": "' + user_code.toString() + '"';
+    }
+    
+    if (arming_type == "ARM_STAY" || arming_type == "ARM_AWAY" ) {
+        command += ', "delay": ' + delay.toString() + ', "bypass": ' + (bypass == "Yes" ? "true" : "false");
+    }
+    
+    command += '}';
+    
+    return command
 }
 
 //
@@ -222,7 +253,12 @@ def disarm( String partition_id, BigDecimal user_code ) {
 //
 
 def socketStatus(String message) {
-    logError( "socketStatus: ${message}")
+    if (message != "receive error: Read timed out") {
+        // Timeouts don't seem to hurt anything and just clutter up the logs
+        // The alarm panel may not send any data for several minutes, especially
+        // if nothing is happening (doors opening/closing, etc.)
+        logError( "socketStatus: ${message}")
+    }
 }
 
 def parse(message) {
@@ -230,24 +266,19 @@ def parse(message) {
 
         logDebug("parse() received ${message.length()} bytes : '${message}'")
 
-        if (message == '41434B0A') { // "ACK" + linefeed
+        if (message.length() >= 3 && message.substring(0,3) == 'ACK') {
             // This is sent by the panel when a command has been received
             // There is nothing to do in response to this
-            logDebug("'ACK' received")
+            partialMessage = '';
+            logDebug("'ACK' received");
         }
         else {
-            logDebug("partialMessage: '${partialMessage}'")
             if (partialMessage != null && partialMessage.length() > 0) {
                 message = partialMessage + message
             }
-            def rdB = hubitat.helper.HexUtils.hexStringToByteArray(message)
-            logDebug("toByteArray: ${rdB}")
-
-            def asciiData = new String(rdB)
-            logDebug("toString: ${asciiData}")
 
             try {
-                def payload = new JsonSlurper().parseText(asciiData)
+                def payload = new JsonSlurper().parseText(message)
                 logDebug("json: ${payload}")
 
                 switch (payload.event) {
@@ -349,7 +380,7 @@ private setHEMode(event, mode) {
 
 private sendCommand(String s) {
     logDebug("sendCommand ${s}")
-    interfaces.rawSocket.sendMessage(s)
+    interfaces.rawSocket.sendMessage(s)    
 }
 
 private processSummary(payload) {
@@ -362,7 +393,7 @@ private processSummary(payload) {
     payload.partition_list.each {
         try {
             processEvent( "Alarm_Mode_Partition_${it.partition_id}", it.status )
-            processEvent( "Secure_Arm_Partition_${it.partition_id}", it.secure_arm )
+            updateDataValue( "Secure_Arm_Partition_${it.partition_id}", it.secure_arm.toString() )
             updateDataValue( "Partition ${it.partition_id} Name", it.name )
 
             def partition = it
@@ -415,15 +446,16 @@ private processSummary(payload) {
 }
 
 private createChildDevice(deviceName, zone, partition, partitions) {
-    log.debug 'Adding Child Alarm Device'
     def dni = "${device.deviceNetworkId}-z${zone.zone_id}"
     def name = (partitions ? partition.name + ': ' : '') + zone.name
     try {
-        log.debug "Trying to create child device ${deviceName} dni: ${dni} if it doesn't already exist"
         def currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
         if (currentchild == null) {
-            log.debug "Creating ${deviceName} child for ${dni}"
+            log.debug "Creating child device '${deviceName}' dni: '${dni}'"
             currentchild = addChildDevice('dcaton-qolsysiq2', deviceName, dni, [name: deviceName /* "${zone.name}" */, label: name, isComponent: true])
+        }
+        else {
+            log.debug "Updating existing child device '${deviceName}' dni: '${dni}'"
         }
         currentchild.updateDataValue('id', zone.id.toString())
         currentchild.updateDataValue('type', zone.type)
@@ -437,7 +469,7 @@ private createChildDevice(deviceName, zone, partition, partitions) {
         currentchild.ProcessZoneUpdate(zone)
     }
     catch (e) {
-        logError("Error creating child device ${dni}", e)
+        logError("Error creating or updating child device '${dni}':", e)
     }
 }
 
@@ -467,19 +499,11 @@ private processZoneUpdate(zone) {
     }
 }
 
-private processEvent( Variable, Value, Unit = null ) {
+private processEvent( Variable, Value ) {
     if ( state."${ Variable }" != Value ) {
         state."${ Variable }" = Value
-        if ( Unit != null ) {
-            logDebug( "Event: ${ Variable } = ${ Value }${ Unit }" )
-            sendEvent( name: "${ Variable }", value: Value, unit: Unit, isStateChanged: true )
-        } else {
-            logDebug( "Event: ${ Variable } = ${ Value }" )
-            sendEvent( name: "${ Variable }", value: Value, isStateChanged: true )
-        }
-    }
-    else {
-    //sendEvent( name: "${ Variable }", value: Value, isStateChanged: false )
+        logDebug( "Event: ${ Variable } = ${ Value }" )
+        sendEvent( name: "${ Variable }", value: Value, isStateChanged: true )
     }
 }
 
