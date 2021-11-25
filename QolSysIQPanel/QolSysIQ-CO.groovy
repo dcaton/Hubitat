@@ -1,11 +1,11 @@
 /*
-*  Unofficial QolSys IQ2+ Alarm Panel Integration for Hubitat
+*  Unofficial QolSys IQ Alarm Panel Integration for Hubitat
 *
-*  QolSys IQ2+ Alarm Panel Virtual Motion Sensor Driver
+*  QolSys IQ Alarm Panel Virtual Carbon Monoxide Detector Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
 *
-*  This is a component driver of the QolSys IQ2+ Alarm Panel Virtual Alarm
+*  This is a component driver of the QolSys IQ Alarm Panel Virtual Alarm
 *  Panel Driver.  Devices using this driver are automatically created as needed.
 *
 *  MIT License
@@ -33,9 +33,9 @@
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ2+ Motion Sensor", namespace: "dcaton-qolsysiq2", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Carbon Monoxide Detector", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
         
-        capability "MotionSensor"
+        capability "CarbonMonoxideDetector"
         capability "TamperAlert"
     }
 }
@@ -45,34 +45,34 @@ void updated() {
 }
 
 void installed() {
-    parent.logInfo "QolSys IQ2+ Motion Detector ${device.deviceNetworkId} installed..."
-	updated()
+    parent.logInfo "QolSys IQ Carbon Monoxide Detector ${device.deviceNetworkId} installed..."
+    updated()
 }
 
 void parse(String description) { log.warn "parse(String description) not implemented" }
 
 def ProcessZoneActive(zone){
-    def motion;
+    def status;
     
     switch (zone.status) {
-        case "Open":
-            motion = "active";
-            break;
         case "Closed":
-            motion = "inactive";
+            status = "clear";
+            break;
+        case "Open":
+            status = "detected";
             break;
         default:
-            motion = "unknown (${zone.status})"
+            status = "unknown (${zone.status})"
     }
         
-    if( state.motion != motion ){
-        state.motion = motion;
-        sendEvent( name: "motion", value: motion, isStateChanged: true )
+    if( state.carbonMonoxide != status ){
+        state.carbonMonoxide = status;
+        sendEvent( name: "carbonMonoxide", value: status, isStateChanged: true )
     }
 }
 
 def ProcessZoneUpdate(zone){
-    // motion - ENUM ["inactive", "active"]
+    // carbonMonoxide - ENUM ["clear", "tested", "detected"]
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
     def tamper;

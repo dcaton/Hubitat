@@ -1,11 +1,11 @@
 /*
-*  Unofficial QolSys IQ2+ Alarm Panel Integration for Hubitat
+*  Unofficial QolSys IQ Alarm Panel Integration for Hubitat
 *
-*  QolSys IQ2+ Alarm Panel Virtual Glass Break Sensor Driver
+*  QolSys IQ Alarm Panel Virtual Alarm Contact Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
 *
-*  This is a component driver of the QolSys IQ2+ Alarm Panel Virtual Alarm
+*  This is a component driver of the QolSys IQ Alarm Panel Virtual Alarm
 *  Panel Driver.  Devices using this driver are automatically created as needed.
 *
 *  MIT License
@@ -33,9 +33,9 @@
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ2+ Glass Break Sensor", namespace: "dcaton-qolsysiq2", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Door/Window Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
         
-        capability "SoundSensor"
+        capability "ContactSensor"
         capability "TamperAlert"
     }
 }
@@ -45,48 +45,24 @@ void updated() {
 }
 
 void installed() {
-    parent.logInfo "QolSys IQ2+ Glass Break Sensor ${device.deviceNetworkId} installed..."
+    parent.logInfo "QolSys IQ Door/Window Sensor ${device.deviceNetworkId} installed..."
 	updated()
 }
 
 void parse(String description) { log.warn "parse(String description) not implemented" }
 
 def ProcessZoneActive(zone){
-    def status;
-    
-    switch (zone.status) {
-        case "Closed":
-            status = "not detected";
-            break;
-        case "Open":
-            status = "detected";
-            break;
-        default:
-            status = "unknown (${zone.status})"
-    }
-        
-    if( state.sound != status ){
-        state.sound = status;
-        sendEvent( name: "sound", value: status, isStateChanged: true )
+    if( state.contact != zone.status ){
+        state.contact = zone.status;
+        sendEvent( name: "contact", value: zone.status.toLowerCase(), isStateChanged: true )
     }
 }
 
 def ProcessZoneUpdate(zone){
-    // sound - ENUM ["detected", "not detected"]
-    // tamper - ENUM ["clear", "detected"]
-    ProcessZoneActive(zone);
-    def tamper;
-    
-    switch (zone.state) {
-        case 0:
-            status = "clear";
-            break;
-        default:
-            status = "unknown (${zone.state})"
-    }
-        
-    if( state.tamper != tamper ){
-        state.tamper = tamper;
-        sendEvent( name: "tamper", value: tamper, isStateChanged: true )
+    // contact - ENUM ["closed", "open"]
+    // tamper - ENUM ["clear", "detected"]    
+    if( state.contact != zone.status ){
+        state.contact = zone.status;
+        sendEvent( name: "contact", value: zone.status.toLowerCase(), isStateChanged: true )
     }
 }

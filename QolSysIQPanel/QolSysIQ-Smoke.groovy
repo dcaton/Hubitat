@@ -1,11 +1,11 @@
 /*
-*  Unofficial QolSys IQ2+ Alarm Panel Integration for Hubitat
+*  Unofficial QolSys IQ Alarm Panel Integration for Hubitat
 *
-*  QolSys IQ2+ Alarm Panel Virtual Carbon Monoxide Detector Driver
+*  QolSys IQ Alarm Panel Virtual Smoke/Heat Detector Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
 *
-*  This is a component driver of the QolSys IQ2+ Alarm Panel Virtual Alarm
+*  This is a component driver of the QolSys IQ Alarm Panel Virtual Alarm
 *  Panel Driver.  Devices using this driver are automatically created as needed.
 *
 *  MIT License
@@ -33,9 +33,9 @@
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ2+ Carbon Monoxide Detector", namespace: "dcaton-qolsysiq2", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Smoke Detector", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
         
-        capability "CarbonMonoxideDetector"
+        capability "SmokeDetector"
         capability "TamperAlert"
     }
 }
@@ -45,7 +45,7 @@ void updated() {
 }
 
 void installed() {
-    parent.logInfo "QolSys IQ2+ Carbon Monoxide Detector ${device.deviceNetworkId} installed..."
+    parent.logInfo "QolSys IQ Smoke Detector ${device.deviceNetworkId} installed..."
 	updated()
 }
 
@@ -65,14 +65,14 @@ def ProcessZoneActive(zone){
             status = "unknown (${zone.status})"
     }
         
-    if( state.carbonMonoxide != status ){
-        state.carbonMonoxide = status;
-        sendEvent( name: "carbonMonoxide", value: status, isStateChanged: true )
+    if( state.smoke != status ){
+        state.smoke = status;
+        sendEvent( name: "smoke", value: status, isStateChanged: true )
     }
 }
 
 def ProcessZoneUpdate(zone){
-    // carbonMonoxide - ENUM ["clear", "tested", "detected"]
+    // smoke - ENUM ["clear", "tested", "detected"]
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
     def tamper;

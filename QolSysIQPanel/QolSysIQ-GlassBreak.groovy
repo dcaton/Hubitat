@@ -1,11 +1,11 @@
 /*
-*  Unofficial QolSys IQ2+ Alarm Panel Integration for Hubitat
+*  Unofficial QolSys IQ Alarm Panel Integration for Hubitat
 *
-*  QolSys IQ2+ Alarm Panel Auxiliary Pendant Driver
+*  QolSys IQ Alarm Panel Virtual Glass Break Sensor Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
 *
-*  This is a component driver of the QolSys IQ2+ Alarm Panel Virtual Alarm
+*  This is a component driver of the QolSys IQ Alarm Panel Virtual Alarm
 *  Panel Driver.  Devices using this driver are automatically created as needed.
 *
 *  MIT License
@@ -28,55 +28,51 @@
 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 *  SOFTWARE.def version() {"v0.1.0"}
 *
-*
-*   Change Log:
-*   2021-03-xx: Initial version
-*
 */
 
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ2+ Auxiliary Pendant", namespace: "dcaton-qolsysiq2", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Glass Break Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
         
-        capability "PushableButton"
+        capability "SoundSensor"
+        capability "TamperAlert"
     }
 }
 
 void updated() {
-    state.version = version();
-    state.numberOfButtons = 1;
+    state.version = version()
 }
 
 void installed() {
-    parent.logInfo "QolSys IQ2+ Auxiliary Pendant ${device.deviceNetworkId} installed..."
+    parent.logInfo "QolSys IQ Glass Break Sensor ${device.deviceNetworkId} installed..."
 	updated()
 }
 
 void parse(String description) { log.warn "parse(String description) not implemented" }
 
-void push(button) { log.warn "push() not applicable for this device; device is read-only"}
-
 def ProcessZoneActive(zone){
-    def pushed = 0;
+    def status;
     
     switch (zone.status) {
-        case "Open":
-            pushed = 1;
-            break;
         case "Closed":
-        default:
-            pushed = 0;
+            status = "not detected";
             break;
+        case "Open":
+            status = "detected";
+            break;
+        default:
+            status = "unknown (${zone.status})"
     }
         
-    if( state.pushed != pushed ){
-        state.pushed = pushed;
-        sendEvent( name: "pushed", value: pushed, isStateChanged: true )
+    if( state.sound != status ){
+        state.sound = status;
+        sendEvent( name: "sound", value: status, isStateChanged: true )
     }
 }
 
 def ProcessZoneUpdate(zone){
+    // sound - ENUM ["detected", "not detected"]
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
     def tamper;

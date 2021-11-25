@@ -1,11 +1,11 @@
 /*
-*  Unofficial QolSys IQ2+ Alarm Panel Integration for Hubitat
+*  Unofficial QolSys IQ Alarm Panel Integration for Hubitat
 *
-*  QolSys IQ2+ Alarm Panel Virtual Smoke/Heat Detector Driver
+*  QolSys IQ Alarm Panel Virtual Water Sensor Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
 *
-*  This is a component driver of the QolSys IQ2+ Alarm Panel Virtual Alarm
+*  This is a component driver of the QolSys IQ Alarm Panel Virtual Alarm
 *  Panel Driver.  Devices using this driver are automatically created as needed.
 *
 *  MIT License
@@ -28,14 +28,18 @@
 *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 *  SOFTWARE.def version() {"v0.1.0"}
 *
+*
+*   Change Log:
+*   2021-03-xx: Initial version
+*
 */
 
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ2+ Smoke Detector", namespace: "dcaton-qolsysiq2", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Water Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
         
-        capability "SmokeDetector"
+        capability "WaterSensor"
         capability "TamperAlert"
     }
 }
@@ -45,34 +49,34 @@ void updated() {
 }
 
 void installed() {
-    parent.logInfo "QolSys IQ2+ Smoke Detector ${device.deviceNetworkId} installed..."
+    parent.logInfo "QolSys IQ Water Sensor ${device.deviceNetworkId} installed..."
 	updated()
 }
 
 void parse(String description) { log.warn "parse(String description) not implemented" }
 
 def ProcessZoneActive(zone){
-    def status;
+    def water;
     
     switch (zone.status) {
-        case "Closed":
-            status = "clear";
-            break;
         case "Open":
-            status = "detected";
+            water = "wet";
+            break;
+        case "Closed":
+            water = "dry";
             break;
         default:
-            status = "unknown (${zone.status})"
+            water = "unknown (${zone.status})"
     }
         
-    if( state.smoke != status ){
-        state.smoke = status;
-        sendEvent( name: "smoke", value: status, isStateChanged: true )
+    if( state.water != water ){
+        state.water = water;
+        sendEvent( name: "water", value: water, isStateChanged: true )
     }
 }
 
 def ProcessZoneUpdate(zone){
-    // smoke - ENUM ["clear", "tested", "detected"]
+    // water - ENUM ["wet", "dry"]
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
     def tamper;

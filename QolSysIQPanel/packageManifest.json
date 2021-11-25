@@ -1,12 +1,12 @@
 {
-    "packageName": "Sunsa Wands",
+    "packageName": "QolSys IQ Alarm Panel",
     "author": "Don Caton",
-    "version": "1.0.4",
-    "minimumHEVersion": "2.2.9.130",
-    "dateReleased": "2021-11-19",
-    "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/LICENSE",
-    "releaseNotes": "Bug fix, restored WindowShade capability until omission is fixed in HE",
-    "documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/README.md",
+    "version": "1.0.0",
+    "minimumHEVersion": "2.3.0.111",
+    "dateReleased": "2021-11-25",
+    "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQ2+/LICENSE",
+    "releaseNotes": "Initial release",
+    "documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQ2+/README.md",
     "communityLink": "",
     "drivers": [
     {

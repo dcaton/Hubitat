@@ -1,11 +1,11 @@
 /*
-*  Unofficial QolSys IQ2+ Alarm Panel Integration for Hubitat
+*  Unofficial QolSys IQ Alarm Panel Integration for Hubitat
 *
-*  QolSys IQ2+ Alarm Panel Virtual Alarm Contact Driver
+*  QolSys IQ Alarm Panel Virtual Motion Sensor Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
 *
-*  This is a component driver of the QolSys IQ2+ Alarm Panel Virtual Alarm
+*  This is a component driver of the QolSys IQ Alarm Panel Virtual Alarm
 *  Panel Driver.  Devices using this driver are automatically created as needed.
 *
 *  MIT License
@@ -33,9 +33,9 @@
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ2+ Door/Window Sensor", namespace: "dcaton-qolsysiq2", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Motion Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
         
-        capability "ContactSensor"
+        capability "MotionSensor"
         capability "TamperAlert"
     }
 }
@@ -45,24 +45,48 @@ void updated() {
 }
 
 void installed() {
-    parent.logInfo "QolSys IQ2+ Door/Window Sensor ${device.deviceNetworkId} installed..."
+    parent.logInfo "QolSys IQ Motion Detector ${device.deviceNetworkId} installed..."
 	updated()
 }
 
 void parse(String description) { log.warn "parse(String description) not implemented" }
 
 def ProcessZoneActive(zone){
-    if( state.contact != zone.status ){
-        state.contact = zone.status;
-        sendEvent( name: "contact", value: zone.status.toLowerCase(), isStateChanged: true )
+    def motion;
+    
+    switch (zone.status) {
+        case "Open":
+            motion = "active";
+            break;
+        case "Closed":
+            motion = "inactive";
+            break;
+        default:
+            motion = "unknown (${zone.status})"
+    }
+        
+    if( state.motion != motion ){
+        state.motion = motion;
+        sendEvent( name: "motion", value: motion, isStateChanged: true )
     }
 }
 
 def ProcessZoneUpdate(zone){
-    // contact - ENUM ["closed", "open"]
-    // tamper - ENUM ["clear", "detected"]    
-    if( state.contact != zone.status ){
-        state.contact = zone.status;
-        sendEvent( name: "contact", value: zone.status.toLowerCase(), isStateChanged: true )
+    // motion - ENUM ["inactive", "active"]
+    // tamper - ENUM ["clear", "detected"]
+    ProcessZoneActive(zone);
+    def tamper;
+    
+    switch (zone.state) {
+        case 0:
+            status = "clear";
+            break;
+        default:
+            status = "unknown (${zone.state})"
+    }
+        
+    if( state.tamper != tamper ){
+        state.tamper = tamper;
+        sendEvent( name: "tamper", value: tamper, isStateChanged: true )
     }
 }

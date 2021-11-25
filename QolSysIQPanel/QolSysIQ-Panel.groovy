@@ -1,12 +1,12 @@
 /*
-*  Unofficial QolSys IQ2+ Alarm Panel Integration for Hubitat
+*  Unofficial QolSys IQ Alarm Panel Integration for Hubitat
 *
-*  QolSys IQ2+ Virtual Alarm Panel Driver
+*  QolSys IQ Virtual Alarm Panel Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
 *
 *  This driver enables status reporting of alarm sensors and alarm states
-*  from a QolSys IQ2+ panel.  It also allows the alarm to be armed and disarmed.
+*  from a QolSys IQ panel.  It also allows the alarm to be armed and disarmed.
 *
 *  Please see the documentation at ...
 *  for prerequisites and installation instructions.
@@ -63,7 +63,7 @@ import groovy.json.JsonSlurper
 import groovy.transform.Field
 
 metadata {
-    definition (name: 'QolSys IQ2+ Alarm Panel', namespace: 'dcaton-qolsysiq2', author: 'Don Caton', importUrl: '') {
+    definition (name: 'QolSys IQ Alarm Panel', namespace: 'dcaton-qolsysiqpanel', author: 'Don Caton', importUrl: '') {
         capability 'Initialize'
         capability 'Refresh'
         capability 'Actuator'
@@ -86,7 +86,7 @@ preferences {
     input('panelip', 'text', title: 'Alarm Panel IP Address', description: '(IPv4 address in form of 192.168.1.45)', required: true)
     input('accessToken', 'text', title: 'Alarm Panel Access Token', description: 'Only required if you want to arm/disarm the system from HE', required: false)
     input( type: 'enum', name: 'DisarmMode', title: 'Set HE mode when alarm is disarmed', required: false, multiple: false, options: modeNames )
-    input( type: 'enum', name: 'ArmStayMode', title: 'Set HE Mode when alarm is armed-stay', required: false, multiple: false, options: modeNames )
+    input( type: 'enum', name: 'ArmStayMode', title: 'Set HE Mode when alarm is armed stay', required: false, multiple: false, options: modeNames )
     input( type: 'enum', name: 'ArmAwayMode', title: 'Set HE mode when alarm is armed away', required: false, multiple: false, options: modeNames )
 
     input 'logInfo', 'bool', title: 'Show Info Logs?',  required: false, defaultValue: true
@@ -95,14 +95,14 @@ preferences {
     input 'logTrace', 'bool', title: 'Show Detailed Logs?', description: 'Only leave on when required', required: false, defaultValue: true
 }
 
-@Field static final String drvThis = 'QolSys IQ2+ Alarm Panel'
-@Field static final String drvDoorWindow = 'QolSys IQ2+ Door/Window Sensor'
-@Field static final String drvSmoke = 'QolSys IQ2+ Smoke/Heat Detector'
-@Field static final String drvMotion = 'QolSys IQ2+ Motion Sensor'
-@Field static final String drvWater = 'QolSys IQ2+ Water Sensor'
-@Field static final String drvCO = 'QolSys IQ2+ Carbon Monoxide Detector'
-@Field static final String drvGlass = 'QolSys IQ2+ Glass Break Sensor'
-@Field static final String drvPendant = 'QolSys IQ2+ Auxiliary Pendant'
+@Field static final String drvThis = 'QolSys IQ Alarm Panel'
+@Field static final String drvDoorWindow = 'QolSys IQ Door/Window Sensor'
+@Field static final String drvSmoke = 'QolSys IQ Smoke/Heat Detector'
+@Field static final String drvMotion = 'QolSys IQ Motion Sensor'
+@Field static final String drvWater = 'QolSys IQ Water Sensor'
+@Field static final String drvCO = 'QolSys IQ Carbon Monoxide Detector'
+@Field static final String drvGlass = 'QolSys IQ Glass Break Sensor'
+@Field static final String drvPendant = 'QolSys IQ Auxiliary Pendant'
 
 @Field static String partialMessage = ''
 
@@ -452,7 +452,7 @@ private createChildDevice(deviceName, zone, partition, partitions) {
         def currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
         if (currentchild == null) {
             log.debug "Creating child device '${deviceName}' dni: '${dni}'"
-            currentchild = addChildDevice('dcaton-qolsysiq2', deviceName, dni, [name: deviceName /* "${zone.name}" */, label: name, isComponent: true])
+            currentchild = addChildDevice('dcaton-qolsysiqpanel', deviceName, dni, [name: deviceName /* "${zone.name}" */, label: name, isComponent: true])
         }
         else {
             log.debug "Updating existing child device '${deviceName}' dni: '${dni}'"

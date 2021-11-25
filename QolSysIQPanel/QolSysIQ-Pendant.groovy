@@ -1,11 +1,11 @@
 /*
-*  Unofficial QolSys IQ2+ Alarm Panel Integration for Hubitat
+*  Unofficial QolSys IQ Alarm Panel Integration for Hubitat
 *
-*  QolSys IQ2+ Alarm Panel Virtual Water Sensor Driver
+*  QolSys IQ Alarm Panel Auxiliary Pendant Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
 *
-*  This is a component driver of the QolSys IQ2+ Alarm Panel Virtual Alarm
+*  This is a component driver of the QolSys IQ Alarm Panel Virtual Alarm
 *  Panel Driver.  Devices using this driver are automatically created as needed.
 *
 *  MIT License
@@ -37,46 +37,46 @@
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ2+ Water Sensor", namespace: "dcaton-qolsysiq2", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Auxiliary Pendant", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
         
-        capability "WaterSensor"
-        capability "TamperAlert"
+        capability "PushableButton"
     }
 }
 
 void updated() {
-    state.version = version()
+    state.version = version();
+    state.numberOfButtons = 1;
 }
 
 void installed() {
-    parent.logInfo "QolSys IQ2+ Water Sensor ${device.deviceNetworkId} installed..."
+    parent.logInfo "QolSys IQ Auxiliary Pendant ${device.deviceNetworkId} installed..."
 	updated()
 }
 
 void parse(String description) { log.warn "parse(String description) not implemented" }
 
+void push(button) { log.warn "push() not applicable for this device; device is read-only"}
+
 def ProcessZoneActive(zone){
-    def water;
+    def pushed = 0;
     
     switch (zone.status) {
         case "Open":
-            water = "wet";
+            pushed = 1;
             break;
         case "Closed":
-            water = "dry";
-            break;
         default:
-            water = "unknown (${zone.status})"
+            pushed = 0;
+            break;
     }
         
-    if( state.water != water ){
-        state.water = water;
-        sendEvent( name: "water", value: water, isStateChanged: true )
+    if( state.pushed != pushed ){
+        state.pushed = pushed;
+        sendEvent( name: "pushed", value: pushed, isStateChanged: true )
     }
 }
 
 def ProcessZoneUpdate(zone){
-    // water - ENUM ["wet", "dry"]
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
     def tamper;
