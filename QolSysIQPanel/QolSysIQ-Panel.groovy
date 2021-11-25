@@ -63,7 +63,7 @@ preferences {
 
 @Field static final String drvThis = 'QolSys IQ Alarm Panel'
 @Field static final String drvDoorWindow = 'QolSys IQ Door/Window Sensor'
-@Field static final String drvSmoke = 'QolSys IQ Smoke/Heat Detector'
+@Field static final String drvSmoke = 'QolSys IQ Smoke Detector'
 @Field static final String drvMotion = 'QolSys IQ Motion Sensor'
 @Field static final String drvWater = 'QolSys IQ Water Sensor'
 @Field static final String drvCO = 'QolSys IQ Carbon Monoxide Detector'
@@ -103,8 +103,6 @@ def initialize() {
     logTrace('initialize()')
     unschedule()
     state.clear()
-    state.version = version()
-    state.reconnectDelay = 2
 
     if (!panelip) {
         logError 'IP Address of alarm panel not configured'
