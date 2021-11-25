@@ -42,6 +42,7 @@ metadata {
         attribute 'Alarm_Mode_Partition_1', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
         attribute 'Alarm_Mode_Partition_2', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
         attribute 'Alarm_Mode_Partition_3', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
+        attribute 'connected', 'bool'
     }
 }
 
@@ -103,6 +104,7 @@ def initialize() {
     logTrace('initialize()')
     unschedule()
     state.clear()
+    processEvent("connected", false);
 
     if (!panelip) {
         logError 'IP Address of alarm panel not configured'
@@ -121,7 +123,8 @@ def initialize() {
 
         interfaces.rawSocket.close();
         partialMessage = '';
-        interfaces.rawSocket.connect("${panelip}", 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true, 'convertReceivedDataToString': true);
+        interfaces.rawSocket.connect(panelip, 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true, 'convertReceivedDataToString': true);
+        processEvent("connected", true);
     }
     catch (e) {
         logError( "initialize error: ${e.message}" )
@@ -214,7 +217,18 @@ private String _createArmCommand( String partition_id, String arming_type, BigDe
 //
 
 def socketStatus(String message) {
-    if (message != "receive error: Read timed out") {
+    if (message == "receive error: String index out of range: -1") {
+        // This is some error condition that repeats every 15ms.
+        // Probably a bug in the rawsocket code.  Close the connection to prevent
+        // the log being flooded with error messages.
+        interfaces.rawSocket.close();       
+        processEvent("connected", false);
+        state.connectionStatus = "faulted, connection closed due to 'receive error: String index out of range: -1'";
+        logError( "socketStatus: ${message}");
+        logError( "Closing connection to alarm panel" );
+        
+    }
+    else if (message != "receive error: Read timed out") {
         // Timeouts don't seem to hurt anything and just clutter up the logs
         // The alarm panel may not send any data for several minutes, especially
         // if nothing is happening (doors opening/closing, etc.)
@@ -223,6 +237,9 @@ def socketStatus(String message) {
 }
 
 def parse(message) {
+    processEvent("connected", true);
+    state.lastMessageReceived = new Date(now()).toString();
+
     if (message.length() > 0) {
 
         logDebug("parse() received ${message.length()} bytes : '${message}'")
