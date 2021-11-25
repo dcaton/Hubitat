@@ -72,6 +72,7 @@ preferences {
 @Field static final String drvPendant = 'QolSys IQ Auxiliary Pendant'
 
 @Field static String partialMessage = ''
+@Field static Integer checkInterval = 300
 
 //
 // Commands
@@ -125,6 +126,8 @@ def initialize() {
         partialMessage = '';
         interfaces.rawSocket.connect(panelip, 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true, 'convertReceivedDataToString': true);
         processEvent("connected", true);
+        state.lastMessageReceivedAt = now();
+        runIn(checkInterval, "connectionCheck");
     }
     catch (e) {
         logError( "initialize error: ${e.message}" )
@@ -239,6 +242,7 @@ def socketStatus(String message) {
 def parse(message) {
     processEvent("connected", true);
     state.lastMessageReceived = new Date(now()).toString();
+    state.lastMessageReceivedAt = now();
 
     if (message.length() > 0) {
 
@@ -340,6 +344,23 @@ def parse(message) {
     }
 }
 
+def connectionCheck() {
+    def now = now();
+    
+    if ( now - state.lastMessageReceivedAt > (checkInterval * 1000)) { 
+        logError("no messages received in ${(now - state.lastMessageReceivedAt)/60000} minutes, reconnecting...");
+        initialize();
+    }
+    else {
+        logDebug("connectionCheck ok");
+        runIn(checkInterval, "connectionCheck");
+    }
+}
+
+//
+// Internal stuff
+//
+
 private setHEMode(event, mode) {
     if (mode != null) {
         if (location.getModes().find { e -> e.name == mode } ) {
@@ -351,10 +372,6 @@ private setHEMode(event, mode) {
         }
     }
 }
-
-//
-// Internal stuff
-//
 
 private sendCommand(String s) {
     logDebug("sendCommand ${s}")
