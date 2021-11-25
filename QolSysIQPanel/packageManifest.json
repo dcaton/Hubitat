@@ -1,26 +1,68 @@
 {
-    "packageName": "QolSys IQ Alarm Panel",
-    "author": "Don Caton",
-    "version": "1.0.0",
-    "minimumHEVersion": "2.3.0.111",
-    "dateReleased": "2021-11-25",
-    "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQ2+/LICENSE",
-    "releaseNotes": "Initial release",
-    "documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQ2+/README.md",
-    "communityLink": "",
-    "drivers": [
+  "packageName": "QolSys IQ Alarm Panel",
+  "author": "Don Caton",
+  "version": "1.0.0",
+  "minimumHEVersion": "2.3.0.111",
+  "dateReleased": "2021-11-24",
+  "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQ2+/LICENSE",
+  "releaseNotes": "Initial release",
+  "documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQ2+/README.md",
+  "communityLink": "",
+  "drivers": [
     {
-      "id": "c3c4553e-e56f-4910-961a-7c42bca11744",
-      "name": "Sunsa Wand",
-      "namespace": "dcaton.sunsawands",
-      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsChild.groovy",
+        "id": "9965491c-86bf-4276-868e-3addaae1f837",
+        "name": "QolSys IQ Carbon Monoxide Detector",
+        "namespace": "dcaton-qolsysiqpanel",
+        "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-CO.groovy",
+        "required": true
+      },
+    {
+      "id": "c27f146a-f86a-47be-a9ce-5a832e915052",
+      "name": "QolSys IQ Door/Window Sensor",
+      "namespace": "dcaton-qolsysiqpanel",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Contact.groovy",
       "required": true
     },
     {
-      "id": "7cf17981-843a-448a-9667-4b3fdb0414e2",
-      "name": "Sunsa Wands API",
-      "namespace": "dcaton.sunsawands",
-      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/SunsaWandsAPI.groovy",
+      "id": "29c3b73a-4bb8-4576-bf0c-8f9ee57ca6dc",
+      "name": "QolSys IQ Glass Break Sensor",
+      "namespace": "dcaton-qolsysiqpanel",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-GlassBreak.groovy",
+      "required": true
+    },
+    {
+      "id": "527f5215-309c-47f8-b8c0-7f9673fbd50d",
+      "name": "QolSys IQ Motion Sensor",
+      "namespace": "dcaton-qolsysiqpanel",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Motion.groovy",
+      "required": true
+    },
+    {
+      "id": "e3ce0b89-ba22-4de9-9d56-7386711d7fde",
+      "name": "",
+      "namespace": "",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Panel.groovy",
+      "required": true
+    },
+    {
+      "id": "57f64674-e742-4b93-8b03-28b04083f2b6",
+      "name": "QolSys IQ Auxiliary Pendant",
+      "namespace": "dcaton-qolsysiqpanel",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Pendant.groovy",
+      "required": true
+    },
+    {
+      "id": "ff058059-26e1-4f70-8ecd-9ccd673a88ef",
+      "name": "QolSys IQ Smoke Detector",
+      "namespace": "dcaton-qolsysiqpanel",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Smoke.groovy",
+      "required": true
+    },
+    {
+      "id": "5c8d55cc-dbb3-43a0-913a-177f06821ec3",
+      "name": "QolSys IQ Water Sensor",
+      "namespace": "dcaton-qolsysiqpanel",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Water.groovy",
       "required": true
     }
   ]

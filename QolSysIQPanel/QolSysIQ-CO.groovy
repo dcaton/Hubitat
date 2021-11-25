@@ -33,7 +33,7 @@
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ Carbon Monoxide Detector", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Carbon Monoxide Detector", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-CO.groovy") {
         
         capability "CarbonMonoxideDetector"
         capability "TamperAlert"

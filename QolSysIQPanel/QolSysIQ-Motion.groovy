@@ -33,7 +33,7 @@
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ Motion Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Motion Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Motion.groovy") {
         
         capability "MotionSensor"
         capability "TamperAlert"

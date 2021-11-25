@@ -37,7 +37,7 @@
 def version() {"v0.1.0"}
 
 metadata {
-    definition(name: "QolSys IQ Water Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "") {
+    definition(name: "QolSys IQ Water Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Water.groovy") {
         
         capability "WaterSensor"
         capability "TamperAlert"

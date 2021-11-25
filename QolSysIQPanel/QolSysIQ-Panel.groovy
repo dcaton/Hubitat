@@ -63,7 +63,7 @@ import groovy.json.JsonSlurper
 import groovy.transform.Field
 
 metadata {
-    definition (name: 'QolSys IQ Alarm Panel', namespace: 'dcaton-qolsysiqpanel', author: 'Don Caton', importUrl: '') {
+    definition (name: 'QolSys IQ Alarm Panel', namespace: 'dcaton-qolsysiqpanel', author: 'Don Caton', importUrl: 'https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Panel.groovy') {
         capability 'Initialize'
         capability 'Refresh'
         capability 'Actuator'
