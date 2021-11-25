@@ -2,12 +2,26 @@
   "author": "Don Caton",
   "gitHubUrl": "https://github.com/dcaton",
   "packages": [
-		{
-			"name": "Sunsa Wands",
-			"category": "Convenience",
-			"tags": ["Window Coverings"],
-			"location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/packageManifest.json",
-			"description": "Driver for Sunsa Wands"
-		}
-	]
+    {
+      "id": "4ece8db8-9e97-4e9d-95cc-90dd929a8ec1",
+      "name": "Sunsa Wands",
+      "category": "Convenience",
+      "tags": [
+        "Window Coverings"
+      ],
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/packageManifest.json",
+      "description": "Driver for Sunsa Wands",
+    },
+    {
+      "id": "27905c8b-7900-4f7f-a4b6-2dbb2994d7dd",
+      "name": "QolSys IQ Alarm Panel",
+      "category": "Security",
+      "tags": [
+        "Alarm Systems",
+        "Safety & Security"
+      ],
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/packageManifest.json",
+      "description": "Driver for QolSys IQ Alarm Panels"
+    }
+  ]
 }
