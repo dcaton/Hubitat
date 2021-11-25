@@ -1,63 +1,29 @@
 /*
-*  Unofficial QolSys IQ Alarm Panel Integration for Hubitat
-*
-*  QolSys IQ Virtual Alarm Panel Driver
+*  QolSys IQ Alarm Panel Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
-*
-*  This driver enables status reporting of alarm sensors and alarm states
-*  from a QolSys IQ panel.  It also allows the alarm to be armed and disarmed.
-*
-*  Please see the documentation at ...
-*  for prerequisites and installation instructions.
-*
-*  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-*
-*  This driver provides the ability to arm and disarm your alarm system.
-*  Although you will need a valid user code for the alarm system, there is
-*  nothing stopping you from hard-coding user codes into a rule that invokes
-*  this driver's arming and disarming commands.
-*
-*  If you do so, take appropriate measures to secure your Hubutat hub, and any
-*  other systems (Node-Red, webcore, etc.) where you create rules that contain
-*  any alarm system user codes.  Likewise for any dashboards or other interfaces
-*  that can invoke this driver's Disarm command.
-*
-*  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-*
-*  This driver is based on research and code from the following members
-*  of the HomeAssistant community (https://community.home-assistant.io/)
-*
+* 
+*  Based on research and code from the following members of
+*  the HomeAssistant community (https://community.home-assistant.io/)
 *   @mzac
 *   @crazeeeyez
 *   @Smwoodward
 *
 *  My apologies if I have inadvertently omitted anyone.
 *
+*  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+*  in compliance with the License. You may obtain a copy of the License at:
 *
-*  MIT License
+*      http://www.apache.org/licenses/LICENSE-2.0
 *
-*  Permission is hereby granted, free of charge, to any person obtaining a copy
-*  of this software and associated documentation files (the "Software"), to deal
-*  in the Software without restriction, including without limitation the rights
-*  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-*  copies of the Software, and to permit persons to whom the Software is
-*  furnished to do so, subject to the following conditions:
+*  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+*  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
+*  for the specific language governing permissions and limitations under the License.
 *
-*  The above copyright notice and this permission notice shall be included in all
-*  copies or substantial portions of the Software.
-*
-*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-*  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-*  SOFTWARE.def version() {"v0.1.0"}
+*   Change Log:
+*   2021-11-24: Initial version
 *
 */
-
-def version() { 'v0.1.0' }
 
 import groovy.json.JsonSlurper
 import groovy.transform.Field
@@ -124,9 +90,6 @@ def uninstalled() {
 
 def updated() {
     logTrace('updated()')
-
-    state.version = version()
-
     initialize()
     refresh()
 }
