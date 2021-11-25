@@ -51,7 +51,7 @@ location.getModes().each { modeNames.add(it.name) };
 
 preferences {
     input('panelip', 'text', title: 'Alarm Panel IP Address', description: '(IPv4 address in form of 192.168.1.45)', required: true)
-    input('accessToken', 'text', title: 'Alarm Panel Access Token', description: 'Only required if you want to arm/disarm the system from HE', required: false)
+    input('accessToken', 'text', title: 'Alarm Panel Access Token', description: '', required: true)
     input( type: 'enum', name: 'DisarmMode', title: 'Set HE mode when alarm is disarmed', required: false, multiple: false, options: modeNames )
     input( type: 'enum', name: 'ArmStayMode', title: 'Set HE Mode when alarm is armed stay', required: false, multiple: false, options: modeNames )
     input( type: 'enum', name: 'ArmAwayMode', title: 'Set HE mode when alarm is armed away', required: false, multiple: false, options: modeNames )
@@ -113,7 +113,7 @@ def initialize() {
     }
 
     if (!accessToken) {
-        logWarn( 'Alarm panel access token not configured.  You will not be able to arm or disarm the system from Hubitat.', true )
+        logError 'Alarm panel access token not configured.'
         return
     }
 
@@ -143,7 +143,7 @@ def refresh() {
 def armStay( String partition_id, String bypass, BigDecimal user_code = 0 ) {
     logTrace( "armStay partition ${partition_id}" )
 
-    if (checkSecureArming(partition_id, user_code) && checkAccessToken() && checkPartition(partition_id)) {
+    if (checkSecureArming(partition_id, user_code) && checkPartition(partition_id)) {
         def msg = _createArmCommand( partition_id, "ARM_STAY", user_code, 0, bypass);
         sendCommand(msg);
     }
@@ -152,7 +152,7 @@ def armStay( String partition_id, String bypass, BigDecimal user_code = 0 ) {
 def armAway( String partition_id, String bypass, BigDecimal delay, BigDecimal user_code = 0 ) {
     logTrace( "armAway partition ${partition_id}" )
 
-    if (checkSecureArming(partition_id, user_code) && checkAccessToken() && checkPartition(partition_id)) {
+    if (checkSecureArming(partition_id, user_code) && checkPartition(partition_id)) {
         def msg = _createArmCommand( partition_id, "ARM_AWAY", user_code, delay, bypass);
         sendCommand(msg);
     }
@@ -162,28 +162,19 @@ def disarm( String partition_id, BigDecimal user_code ) {
     logTrace( "disarm partition ${partition_id} usercode ${user_code}" )
 
     if (!user_code) {
-        logError( 'Alarm panel user code not specified.  You cannot disarm the system without a user code.', true )
+        logError( 'Alarm panel user code not specified.  You cannot disarm the system without a user code.')
         return
     }
 
-    if (checkAccessToken() && checkPartition(partition_id)) {
+    if (checkPartition(partition_id)) {
         def msg = _createArmCommand( partition_id, "DISARM", user_code);
         sendCommand(msg);
     }
 }
 
-private boolean checkAccessToken() {
-    if (!accessToken) {
-        logError( 'Alarm panel access token not configured.  You can not arm or disarm the system from Hubitat until the access token is configured.', true )
-        return false;
-    }
-    
-    return true;
-}
-
 private boolean checkSecureArming(String partition_id, BigDecimal user_code = 0) {
      if (getDataValue( "Secure_Arm_Partition_${partition_id}" ) && user_code == 0) {
-        logError( "Secure arming enabled for partition ${partition_id}.  User code must be specified in order to arm panel.", true )
+        logError( "Secure arming enabled for partition ${partition_id}.  User code must be specified in order to arm panel.")
         return false;
     }
     
@@ -192,7 +183,7 @@ private boolean checkSecureArming(String partition_id, BigDecimal user_code = 0)
 
 private boolean checkPartition(String partition_id) {
     if (partition_id.toInteger() >= getDataValue( 'Partitions' ).toInteger()) {
-        logError( "Partition ${partition_id} is not enabled in the alarm panel.", true )
+        logError( "Partition ${partition_id} is not enabled in the alarm panel.")
         return false;
     }
     
@@ -435,7 +426,7 @@ private processSummary(payload) {
             }
         }
         catch (e) {
-            logError('Error in processSummary()', e)
+            logError('Error in processSummary(): ${e.message}')
         }
     }
 }
@@ -464,7 +455,7 @@ private createChildDevice(deviceName, zone, partition, partitions) {
         currentchild.ProcessZoneUpdate(zone)
     }
     catch (e) {
-        logError("Error creating or updating child device '${dni}':", e)
+        logError("Error creating or updating child device '${dni}': ${e.message}")
     }
 }
 
@@ -476,7 +467,7 @@ private processZoneActive(zone) {
         currentchild.ProcessZoneActive(zone)
     }
     catch (e) {
-        logError("child device ${dni} not found!  Refreshing device list", e)
+        logError("child device ${dni} not found!  Refreshing device list, ${e.message}")
         refresh()
     }
 }
@@ -489,7 +480,7 @@ private processZoneUpdate(zone) {
         currentchild.ProcessZoneUpdate(zone)
     }
     catch (e) {
-        logError("child device ${dni} not found!  Refreshing device list", e)
+        logError("child device ${dni} not found!  Refreshing device list, ${e.message}")
         refresh()
     }
 }
@@ -538,10 +529,6 @@ void logWarn(String msg, boolean force = false) {
     }
 }
 
-void logError(String msg, ex = null) {
+void logError(String msg) {
     log.error "${drvThis}: ${msg}"
-    try {
-        if (ex) log.error getExceptionMessageWithLine(ex)
-    } catch (e) {
-    }
 }
