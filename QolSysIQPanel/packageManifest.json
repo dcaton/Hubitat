@@ -39,8 +39,8 @@
     },
     {
       "id": "e3ce0b89-ba22-4de9-9d56-7386711d7fde",
-      "name": "",
-      "namespace": "",
+      "name": "QolSys IQ Alarm Panel",
+      "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Panel.groovy",
       "required": true
     },
