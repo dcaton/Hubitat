@@ -37,11 +37,27 @@ metadata {
         command 'armStay', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'bypass', type: 'ENUM', description: 'Bypass open or faulted sensors', constraints: ['No', 'Yes']], [name: 'user_code', type: 'NUMBER', description: 'User code (optional if panel is configured to arm without a user code' ]]
         command 'armAway', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'bypass', type: 'ENUM', description: 'Bypass open or faulted sensors', constraints: ['No', 'Yes']], [name:'exitDelay*', type: 'NUMBER', description: 'Exit delay in seconds'], [name: 'user_code', type: 'NUMBER', description: 'User code (optional if panel is configured to arm without a user code' ]]
         command 'disarm', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'user_code*', type: 'NUMBER', description: 'User code to disarm' ]]
+        command 'alarm', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'alarmType', type: 'ENUM', description: 'Trigger an alarm condition', constraints: ['POLICE', 'FIRE', 'AUXILIARY'] ]]
 
-        attribute 'Alarm_Mode_Partition_0', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
-        attribute 'Alarm_Mode_Partition_1', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
-        attribute 'Alarm_Mode_Partition_2', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
-        attribute 'Alarm_Mode_Partition_3', 'enum', ['DISARM', 'ARM_STAY', 'ARM_AWAY', 'ALARM_INTRUSION', 'ALARM_AUXILIARY', 'ALARM_FIRE', 'ALARM_POLICE']
+        attribute 'Alarm_Mode_Partition_0', 'enum', ['DISARM', 'ENTRY_DELAY', 'EXIT_DELAY', 'ARM_STAY', 'ARM_AWAY', 'ALARM_POLICE', 'ALARM_FIRE', 'ALARM_AUXILIARY']
+        attribute 'Alarm_Mode_Partition_1', 'enum', ['DISARM', 'ENTRY_DELAY', 'EXIT_DELAY', 'ARM_STAY', 'ARM_AWAY', 'ALARM_POLICE', 'ALARM_FIRE', 'ALARM_AUXILIARY']
+        attribute 'Alarm_Mode_Partition_2', 'enum', ['DISARM', 'ENTRY_DELAY', 'EXIT_DELAY', 'ARM_STAY', 'ARM_AWAY', 'ALARM_POLICE', 'ALARM_FIRE', 'ALARM_AUXILIARY']
+        attribute 'Alarm_Mode_Partition_3', 'enum', ['DISARM', 'ENTRY_DELAY', 'EXIT_DELAY', 'ARM_STAY', 'ARM_AWAY', 'ALARM_POLICE', 'ALARM_FIRE', 'ALARM_AUXILIARY']
+        
+        attribute 'Entry_Delay_Partition_0', 'number'
+        attribute 'Entry_Delay_Partition_1', 'number'
+        attribute 'Entry_Delay_Partition_2', 'number'
+        attribute 'Entry_Delay_Partition_3', 'number'
+
+        attribute 'Exit_Delay_Partition_0', 'number'
+        attribute 'Exit_Delay_Partition_1', 'number'
+        attribute 'Exit_Delay_Partition_2', 'number'
+        attribute 'Exit_Delay_Partition_3', 'number'
+        
+        attribute 'Error_Partition_0', 'text'
+        attribute 'Error_Partition_1', 'text'
+        attribute 'Error_Partition_2', 'text'
+        attribute 'Error_Partition_3', 'text'
     }
 }
 
@@ -54,6 +70,8 @@ preferences {
     input( type: 'enum', name: 'DisarmMode', title: 'Set HE mode when alarm is disarmed', required: false, multiple: false, options: modeNames )
     input( type: 'enum', name: 'ArmStayMode', title: 'Set HE Mode when alarm is armed stay', required: false, multiple: false, options: modeNames )
     input( type: 'enum', name: 'ArmAwayMode', title: 'Set HE mode when alarm is armed away', required: false, multiple: false, options: modeNames )
+    input( type: 'bool', name: 'AllowArmAndDisarm', title: 'Allow HE to send arming and disarming commands', required: false, defaultValue: false )
+    input( type: 'bool', name: 'AllowTriggerAlarm', title: 'Allow HE to trigger an alarm condition', required: false, defaultValue: false )
 
     input 'logInfo', 'bool', title: 'Show Info Logs?',  required: false, defaultValue: true
     input 'logWarn', 'bool', title: 'Show Warning Logs?', required: false, defaultValue: true
@@ -71,7 +89,7 @@ preferences {
 @Field static final String drvPendant = 'QolSys IQ Auxiliary Pendant'
 
 @Field static String partialMessage = ''
-@Field static Integer checkInterval = 300
+@Field static Integer checkInterval = 600
 
 //
 // Commands
@@ -103,7 +121,9 @@ def configure() {
 def initialize() {
     logTrace('initialize()')
     unschedule()
+    interfaces.rawSocket.close();
     state.clear()
+    partialMessage = '';
 
     if (!panelip) {
         logError 'IP Address of alarm panel not configured'
@@ -116,15 +136,14 @@ def initialize() {
     }
 
     try {
-        if (getChildDevices().size() == 0) {
-            refresh()
-        }
-
-        interfaces.rawSocket.close();
-        partialMessage = '';
+        logTrace('attempting to connect to panel...')
         interfaces.rawSocket.connect(panelip, 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true, 'convertReceivedDataToString': true);
         state.lastMessageReceivedAt = now();
         runIn(checkInterval, "connectionCheck");
+        
+        if (getChildDevices().size() == 0) {
+            refresh()
+        }        
     }
     catch (e) {
         logError( "initialize error: ${e.message}" )
@@ -133,15 +152,16 @@ def initialize() {
 
 def refresh() {
     logTrace('refresh()')
-    def msg = '{ "nonce": "", "action": "INFO", "info_type": "SUMMARY", "version": 0, "source": "C4", "token": "' + accessToken + '"}'
+    def msg = '{ "nonce": "", "action": "INFO", "info_type": "SUMMARY", "version": 1, "source": "C4", "token": "' + accessToken + '"}'
     sendCommand(msg)
 }
 
 def armStay( String partition_id, String bypass, BigDecimal user_code = 0 ) {
     logTrace( "armStay partition ${partition_id}" )
 
-    if (checkSecureArming(partition_id, user_code) && checkPartition(partition_id)) {
+    if (checkAllowArming() && checkSecureArming(partition_id, user_code) && checkPartition(partition_id)) {
         def msg = _createArmCommand( partition_id, "ARM_STAY", user_code, 0, bypass);
+        processEvent( "Error_Partition_${partition_id}", "(No error)" );
         sendCommand(msg);
     }
 }
@@ -149,8 +169,9 @@ def armStay( String partition_id, String bypass, BigDecimal user_code = 0 ) {
 def armAway( String partition_id, String bypass, BigDecimal delay, BigDecimal user_code = 0 ) {
     logTrace( "armAway partition ${partition_id}" )
 
-    if (checkSecureArming(partition_id, user_code) && checkPartition(partition_id)) {
+    if (checkAllowArming() && checkSecureArming(partition_id, user_code) && checkPartition(partition_id)) {
         def msg = _createArmCommand( partition_id, "ARM_AWAY", user_code, delay, bypass);
+        processEvent( "Error_Partition_${partition_id}", "(No error)" );
         sendCommand(msg);
     }
 }
@@ -163,12 +184,37 @@ def disarm( String partition_id, BigDecimal user_code ) {
         return
     }
 
-    if (checkPartition(partition_id)) {
+    if (checkAllowArming() && checkPartition(partition_id)) {
         def msg = _createArmCommand( partition_id, "DISARM", user_code);
+        processEvent( "Error_Partition_${partition_id}", "(No error)" );
         sendCommand(msg);
     }
 }
 
+def alarm( String partition_id, String alarm_type ) {
+    logTrace( "initiate alarm ${alarm_type}, partition ${partition_id}" )
+
+    if (! (Boolean)settings.AllowTriggerAlarm) {
+        logError( "AllowTriggerAlarm setting must be enabled in order to initiate an alarm.")
+        return;
+    }
+
+    if (checkPartition(partition_id)) {
+        def msg = '{ "nonce": "", "action": "ALARM", "alarm_type": "' + alarm_type + '", "version": 1, "source": "C4", "token": "' + accessToken + '", "partition_id":' + partition_id.toString() + ' }'
+        logTrace( "initiate alarm: ${msg}" )
+        processEvent( "Error_Partition_${partition_id}", "(No error)" );
+        sendCommand(msg);
+    }
+}
+
+private boolean checkAllowArming() {
+    def allow = (Boolean)settings.AllowArmAndDisarm;
+    if (! allow) {
+        logError( "AllowArmAndDisarm setting must be enabled in order to use arm and disarm commands.")
+    }
+    return allow;
+}
+        
 private boolean checkSecureArming(String partition_id, BigDecimal user_code = 0) {
      if (getDataValue( "Secure_Arm_Partition_${partition_id}" ) && user_code == 0) {
         logError( "Secure arming enabled for partition ${partition_id}.  User code must be specified in order to arm panel.")
@@ -188,7 +234,7 @@ private boolean checkPartition(String partition_id) {
 }
 
 private String _createArmCommand( String partition_id, String arming_type, BigDecimal user_code, BigDecimal delay = 0, String bypass = "" ) {
-    def command = '{ "version": 1, "source": "C4", "action": "ARMING", "nonce": "", "version_key": 1, "token": "' + accessToken + '", "partition_id":' + partition_id.toString() + '", "arming_type": "' + arming_type + '", ' ;
+    def command = '{ "version": 1, "source": "C4", "action": "ARMING", "nonce": "", "token": "' + accessToken + '", "partition_id":' + partition_id.toString() + '", "arming_type": "' + arming_type + '", ' ;
     
     if (user_code) {
         command += '"usercode": "' + user_code.toString() + '"';
@@ -234,7 +280,6 @@ def parse(message) {
 
         if (message.length() >= 3 && message.substring(0,3) == 'ACK') {
             // This is sent by the panel when a command has been received
-            // There is nothing to do in response to this
             partialMessage = '';
             logDebug("'ACK' received");
         }
@@ -281,7 +326,16 @@ def parse(message) {
                         logInfo("Arming event received: ${payload.arming_type}")
                         processEvent( "Alarm_Mode_Partition_${payload.partition_id}", payload.arming_type )
                         switch (payload.arming_type) {
+                            case 'EXIT_DELAY':
+                                processEvent( "Exit_Delay_Partition_${payload.partition_id}", payload.delay )
+                                break;
+                            
+                            case 'ENTRY_DELAY':
+                                processEvent( "Entry_Delay_Partition_${payload.partition_id}", payload.delay )
+                                break;
+                            
                             case 'DISARM':
+                                processEvent( "Entry_Delay_Partition_${payload.partition_id}", 0 )
                                 setHEMode( payload.arming_type, DisarmMode )
                                 break
 
@@ -290,28 +344,32 @@ def parse(message) {
                                 break
 
                             case 'ARM_AWAY':
+                                processEvent( "Exit_Delay_Partition_${payload.partition_id}", 0 )
                                 setHEMode( payload.arming_type, ArmAwayMode )
                                 break
+                            
+                            default:
+                                logError("Unhandled ARMING message: ${message}")
+                                break;
                         }
                         break
 
                     case'ALARM':
-                        logInfo("Alarm event received: ${payload.arming_type} ${payload.alarm_type}")
+                        logInfo("Alarm event received: ${payload.alarm_type}")
 
-                        def alarmType = 'ALARM_'
-
-                        // payload.alarm_type can be empty (for intrusion alarm), "AUXILIARY", "FIRE", "POLICE", maybe others...
+                        // payload.alarm_type can be "POLICE", "FIRE" OR "AUXILIARY"
                         // If it's empty, append "INTRUSION"
+                    
+                        // Note there is no distinction made between an audible and silent alarm,
+                        // or an alarm initiated by a sensor vs an alarm initiated on the keypad
 
-                        if (payload.alarm_type == '') {
-                            alarmType += 'INTRUSION'
-                        }
-                        else {
-                            alarmType += payload.alarm_type
-                        }
-
-                        processEvent( "Alarm_Mode_Partition_${payload.partition_id}", alarmType )
+                        processEvent( "Alarm_Mode_Partition_${payload.partition_id}", "ALARM_" + payload.alarm_type )
                         break
+                    
+                    case 'ERROR':
+                        logInfo("Error received: '${payload.error_type}' '${payload.description}'");
+                        processEvent( "Error_Partition_${payload.partition_id}", "${payload.error_type}: ${payload.description}" )
+                        break;
 
                     default:
                         logError("Unhandled message: ${message}")
@@ -374,6 +432,7 @@ private processSummary(payload) {
             processEvent( "Alarm_Mode_Partition_${it.partition_id}", it.status )
             updateDataValue( "Secure_Arm_Partition_${it.partition_id}", it.secure_arm.toString() )
             updateDataValue( "Partition ${it.partition_id} Name", it.name )
+            state.unrecognizedDevices = "false";
 
             def partition = it
             def zoneList = it.zone_list
@@ -402,12 +461,13 @@ private processSummary(payload) {
                 }
                 else {
                     logError("Unhandled device type ${it.type}")
+                    state.unrecognizedDevices = "true";
                 }
             }
 
             def partitionId = it.partition_id
 
-            logInfo( 'Searching for orphaned devices...' )
+            logDebug( 'Searching for orphaned devices...' )
 
             getChildDevices().each {
                 def zoneid = it.id
