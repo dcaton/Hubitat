@@ -64,6 +64,13 @@
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Water.groovy",
       "required": true
+    },
+    {
+      "id": "afc44a53-28ad-42d9-b867-182da1397dc8",
+      "name": "QolSys IQ Water Sensor",
+      "namespace": "dcaton-qolsysiqpanel",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-TakeoverModule.groovy",
+      "required": true
     }
   ]
 }

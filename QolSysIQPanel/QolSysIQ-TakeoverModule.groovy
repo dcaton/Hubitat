@@ -30,7 +30,7 @@
 */
 
 metadata {
-    definition(name: "QolSys IQ Takeover Module", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Contact.groovy") {
+    definition(name: "QolSys IQ Takeover Module", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-TakeoverModule.groovy") {
         
         capability "ContactSensor"
     }
