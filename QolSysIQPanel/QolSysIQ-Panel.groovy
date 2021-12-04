@@ -87,6 +87,7 @@ preferences {
 @Field static final String drvCO = 'QolSys IQ Carbon Monoxide Detector'
 @Field static final String drvGlass = 'QolSys IQ Glass Break Sensor'
 @Field static final String drvPendant = 'QolSys IQ Auxiliary Pendant'
+@Field static final String drvTakeover = 'QolSys IQ Takeover Module'
 
 @Field static String partialMessage = ''
 @Field static Integer checkInterval = 600
@@ -458,6 +459,9 @@ private processSummary(payload) {
                 }
                 else if ( it.type == 'Auxiliary Pendant' ) {
                     createChildDevice( drvPendant, it, partition, partitions )
+                }
+                else if ( it.type == 'TakeoverModule' ) {
+                    createChildDevice( drvTakeover, it, partition, partitions )
                 }
                 else {
                     logError("Unhandled device type ${it.type}")
