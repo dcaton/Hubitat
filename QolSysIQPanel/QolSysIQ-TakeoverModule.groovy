@@ -1,5 +1,5 @@
 /*
-*  QolSys IQ Alarm Panel Virtual Alarm Contact Driver
+*  QolSys IQ Alarm Panel Virtual Takeover Module Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
 *
