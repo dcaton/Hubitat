@@ -141,7 +141,7 @@ Attributes
 
 If partitions are not enabled, the only the attributes ending in "_0" will be present.
 
-- Alarm_Mode_Partition_0  (and if partitions enabled, _1, _2, _3)
+- **Alarm_Mode_Partition_0**  (and if partitions enabled, _1, _2, _3)
 
     Arming, disarming or tripping the alarm system will cause one of these attributes to change to one of the following enum values:
 
@@ -154,7 +154,7 @@ If partitions are not enabled, the only the attributes ending in "_0" will be pr
     - ALARM_FIRE
     - ALARM_AUXILIARY
 
-- Entry_Delay_Partition_0  (and if partitions enabled, _1, _2, _3)
+- **Entry_Delay_Partition_0**  (and if partitions enabled, _1, _2, _3)
 
     When the Alarm_Mode_Partition_x attribute changes to ENTRY_DELAY, this attribute will be updated with the number of seconds
     the panel will wait for a valid user code to disarm the system.  If a valid user code was entered, Alarm_Mode_Partition_x
@@ -163,7 +163,7 @@ If partitions are not enabled, the only the attributes ending in "_0" will be pr
     Note that if you have a rule in alarm.com that disarms your panel when a valid code is entered on a connected z-wave door
     lock, Alarm_Mode_Partition_x will immediately be set to DISARM and this attribute will remain 0.
 
-- Exit_Delay_Partition_0  (and if partitions enabled, _1, _2, _3)
+- **Exit_Delay_Partition_0** (and if partitions enabled, _1, _2, _3)
 
     When the Alarm_Mode_Partition_x attribute changes to EXIT_DELAY, this attribute will be updated with the number of seconds
     the panel will wait before arming the system, allowing you to open any doors configured as entry/exit doors and trip any
@@ -173,7 +173,7 @@ If partitions are not enabled, the only the attributes ending in "_0" will be pr
 
     When the exit delay period has expired, Alarm_Mode_Partition_x changes to ARM_AWAY and this attribute changes to 0.
 
-- Error_Partition_0  (and if partitions enabled, _1, _2, _3)
+- **Error_Partition_0**  (and if partitions enabled, _1, _2, _3)
 
    If an error occurs and is reported by the panel, this attribute will contain the error message.  This will occur for example
    if an invalid user code was used to arm or disarm the system.  This attribute is cleared when the next command is sent to the
@@ -182,14 +182,14 @@ If partitions are not enabled, the only the attributes ending in "_0" will be pr
 Commands
 --------
 
-- alarm
+- **alarm**
 
 This command will initiate an alarm condition.  Select the partition and type of alarm you want to initiate.
 To prevent the police or fire department from showing up at your door, this command will have no effect
 unless the "Allow HE to trigger an alarm condition" setting is turned on.  If you have no need to initiate an
 alarm from HE, leave that setting off.
 
-- armAway
+- **armAway**
 
 This command will arm the system in arm-away mode.  If the bypass parameter is true, any open or faulted zones
 will automatically be bypassed.  If your alarm panel is configured for secure arming, you will need to supply
@@ -200,7 +200,7 @@ To prevent the system being armed accidentally, this command will have no effect
 arming and disarming commands" setting is turned on.  If you have no need to arm or disarm your system from HE,
 leave that setting off.
  
-- armStay
+- **armStay**
 
 This command will arm the system in arm-stay mode.  If the bypass parameter is true, any open or faulted zones
 will automatically be bypassed.  If your alarm panel is configured for secure arming, you will need to supply
@@ -208,17 +208,17 @@ a valid user code in order to arm the system.  If your panel is not configured f
 this parameter or pass zero.   As with armAway, the "Allow HE to send arming and disarming commands" needs to be on
 for this command to have any effect.
  
-- disarm
+- **disarm**
 
 This command disarms the alarm system.  A valid user code must be provided.  As with armStay and armAway, 
 the "Allow HE to send arming and disarming commands" needs to be on for this command to have any effect.
 
-- initialize
+- **initialize**
 
 This command will close the connection to your alarm panel and attempt to reconnect.  There should really be no
 reason to call this command.
 
-- refresh
+- **refresh**
 
 This command will request a list of devices from the alarm panel, and add, delete or update the corresponding
 virtual drivers in HE.  If you add, remove or edit any devices on your alarm panel, you should use this command
