@@ -141,13 +141,9 @@ Attributes
 
 If partitions are not enabled, the only the attributes ending in "_0" will be present.
 
-- Alarm_Mode_Partition_0
-- Alarm_Mode_Partition_1
-- Alarm_Mode_Partition_2
-- Alarm_Mode_Partition_3
+- Alarm_Mode_Partition_0  (and if partitions enabled, _1, _2, _3)
 
-    Arming, disarming or tripping the alarm system will cause one of the "Alarm_Mode_Partition_x"
-    attributes in the parent driver to change to one of the following enum values:
+    Arming, disarming or tripping the alarm system will cause one of these attributes to change to one of the following enum values:
 
     - DISARM
     - ARM_STAY
@@ -158,10 +154,7 @@ If partitions are not enabled, the only the attributes ending in "_0" will be pr
     - ALARM_FIRE
     - ALARM_AUXILIARY
 
-- Entry_Delay_Partition_0
-- Entry_Delay_Partition_1
-- Entry_Delay_Partition_2
-- Entry_Delay_Partition_3
+- Entry_Delay_Partition_0  (and if partitions enabled, _1, _2, _3)
 
     When the Alarm_Mode_Partition_x attribute changes to ENTRY_DELAY, this attribute will be updated with the number of seconds
     the panel will wait for a valid user code to disarm the system.  If a valid user code was entered, Alarm_Mode_Partition_x
@@ -170,10 +163,7 @@ If partitions are not enabled, the only the attributes ending in "_0" will be pr
     Note that if you have a rule in alarm.com that disarms your panel when a valid code is entered on a connected z-wave door
     lock, Alarm_Mode_Partition_x will immediately be set to DISARM and this attribute will remain 0.
 
-- Exit_Delay_Partition_0
-- Exit_Delay_Partition_1
-- Exit_Delay_Partition_2
-- Exit_Delay_Partition_3
+- Exit_Delay_Partition_0  (and if partitions enabled, _1, _2, _3)
 
     When the Alarm_Mode_Partition_x attribute changes to EXIT_DELAY, this attribute will be updated with the number of seconds
     the panel will wait before arming the system, allowing you to open any doors configured as entry/exit doors and trip any
@@ -183,10 +173,7 @@ If partitions are not enabled, the only the attributes ending in "_0" will be pr
 
     When the exit delay period has expired, Alarm_Mode_Partition_x changes to ARM_AWAY and this attribute changes to 0.
 
-- Error_Partition_0
-- Error_Partition_1
-- Error_Partition_2
-- Error_Partition_3
+- Error_Partition_0  (and if partitions enabled, _1, _2, _3)
 
    If an error occurs and is reported by the panel, this attribute will contain the error message.  This will occur for example
    if an invalid user code was used to arm or disarm the system.  This attribute is cleared when the next command is sent to the
