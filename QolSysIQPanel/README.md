@@ -18,19 +18,20 @@ with the IQ2 and the new IQ4 panels.
 Please note that although the IQ panels have z-wave controllers, the interface these
 drivers use does not provide access to any z-wave devices.  If you want HE to control
 z-wave devices controlled by the alarm panel, you could add HE as a secondary z-wave
-controller.  As of 2.3.129, this seems to work althouogh it is not really supported
-by HE.  In any case, z-wave devices are outside the scope of these drivers.
+controller.  As of 2.3.129, this seems to work although it is not really supported
+by HE.  In any case, controlling z-wave devices paired to your alarm panel is outside
+the scope of these drivers.
 
-Although these drivers use a supported alarm system interface, the interface
-itself is not publicly documented or supported, and these drivers rely on reverse
-engineering to do what they do.  Use at your own risk.
+Although these drivers use a supported interface, the interface itself is not publicly
+documented or supported, and these drivers rely on reverse engineering to do what they do.
+Use at your own risk.  
 
 
 **WARNING**
 =======
 
 These drivers provide the ability to arm and disarm your alarm system, and to initiate
-alarm conditions from HE.  If you enable either of these, especially disarming,
+alarm conditions from HE.  If you enable either these commands, especially disarm,
 take appropriate measures to secure your Hubutat hub and any other connected systems
 (e.g., NodeRed, WebCore etc.) where you can create rules that manipulate your alarm
 system.
@@ -39,11 +40,11 @@ system.
 Prerequisites
 =============
 
-1. You must have the **dealer code** for your panel in order to enable the 3rd
-Party Connection option.  The default dealer code is 2222.  If your panel was
+1. You must have the **dealer code** for your panel in order to configure the "3rd
+Party Connection" options.  The default dealer code is 2222.  If your panel was
 installed by an alarm installer, they may have changed the dealer code and you
 will need to obtain it from them.  Please note that the "dealer" code is **NOT** the
-same as the "installer" code, nor it is the same as any user codes.
+same as the "installer" code, nor is it the same as any user codes.
 
 2. Your IQ2+ alarm panel must be running system firmware 2.4.0 or later.  Instructions
 on how to check your firmware version and install updates may be found here:
@@ -57,8 +58,8 @@ panel must be reachable from your HE hub.  If Wifi isn't enabled, on your alarm 
 touch the small gray bar at the top of the screen, then choose Settings ->
 Advanced Settings -> Wifi and configure the Wifi settings.  
 
-If your alarm panel is configured to use DHCP (the default), it is strongly suggested that you go into your router or DHCP server and reserve the IP address assigned to your alarm panel, so that it cannot change in the future.  Alternatively, you can assign a
-static IP address to the alarm panel.  Go into the Wifi setup screen, add a new Wifi connection and click the Advanced Settings checkbox in the Wifi parameters dialog.
+    If your alarm panel is configured to use DHCP (the default), it is strongly suggested that you go into your router or DHCP server and reserve the IP address assigned to your alarm panel, so that it cannot change in the future.  Alternatively, you can assign a
+static IP address to the alarm panel.  Go into the Wifi setup screen, add a new Wifi connection and click the Advanced Settings checkbox in the Wifi parameters dialog, then you can configure a static IP address.
 
 4. If your alarm system is monitored, you may want to call the monitoring station and put your system in test mode for some period of time.  That way you can play with the various
 commands without having the police or fire department show up at your door.
@@ -67,12 +68,12 @@ Installation Instructions
 =========================
 
 1. These drivers use the alarm panel's Control4 (C4) interface.  As of firmware 2.6,
-you must enable 6 digit user codes before you can enable the C4 interface.  By default,
-the IQ panel uses 4 digit user codes.  However, once the C4 inteface is enabled, 
+you must enable 6 digit user codes before you can enable the C4 interface (by default,
+the IQ panel uses 4 digit user codes).  However, once the C4 interface is enabled, 
 you can go back to 4 digit user codes.  Your existing codes will remain intact.
 
-If you are already using 6 digit user codes, skip to step 2.  Otherwise, on your alarm panel,
-touch the small grap bar at the top of the screen, then choose Settings -> Advanced Settings -> 
+    If you are already using 6 digit user codes, skip to step 2.  Otherwise, on your alarm panel,
+touch the small gray bar at the top of the screen, then choose Settings -> Advanced Settings -> 
 Enter Dealer Code -> Dealer Settings.  Scroll down to 6 Digit User Codes and check the box.
 Your existing codes will have two zeros added to the end.  Touch Ok.  Your panel may reboot.
 
@@ -80,7 +81,7 @@ Your existing codes will have two zeros added to the end.  Touch Ok.  Your panel
  -> Enter Dealer Code -> Installation -> Devices -> WiFi Devices -> 3rd Party Connections.
  Check the box for **Control4**. Confirm Ok, and wait for the panel to reboot.
 
-3. If you were using 6 digit user codes, skip to step 4.  Otherwise, touch the small grap bar
+3. If you were using 6 digit user codes, skip to step 4.  Otherwise, touch the small gray bar
 at the top of the screen, then choose Settings -> Advanced Settings -> Enter Dealer Code -> Dealer Settings.
 Scroll down to 6 Digit User Codes and uncheck the box.  The two zeros added to the end of your original 
 codes will be removed.  This may require your alarm panel to reboot.
@@ -88,7 +89,7 @@ codes will be removed.  This may require your alarm panel to reboot.
 4. Touch the small gray bar at the top of the screen, then choose Settings -> Advanced Settings
  -> Enter Dealer Code -> Installation -> Devices -> WiFi Devices -> 3rd Party Connections.
 Touch "Reveal Secure Token".  Write down the 6 character token, then touch the icon of a house
-at the bottom of the screen when finished.
+at the bottom of the screen.
 
 5. At the alarm panel home screen, swipe left or right until you see the Wifi / Software Update / Bluetooth screen.  
 Touch the "Details" button under Wifi and make a note of the panel's IP address.  Note that if the
@@ -129,31 +130,67 @@ QolSys IQ Alarm Panel Device
 
 This virtual device represents the physical alarm panel.
 
-Attributes
-----------
-
-All alarm system events cause an attribute change event to occur in the corresponding virtual
-device in HE.  For example, opening a door or window will cause the corresponding HE device
-attribute "contact" to change from "closed" to "open".
-
-Arming, disarming or tripping the alarm system will cause one of the "Alarm_Mode_Partition_x"
-attributes in the parent driver to change to one of the following enum values:
-
-- DISARM
-- ARM_STAY
-- ARM_AWAY
-- EXIT_DELAY
-- ENTRY_DELAY
-- ALARM_POLICE
-- ALARM_FIRE
-- ALARM_AUXILIARY
-
 The QolSys IQ panel has a feature called "partitions".  When enabled, up to four partitions may
 be configured.  Every alarm sensor belongs to a partition, and each parition is armed and diarmed
 individually.  A house with a deteched garage for example could use partition 0 for the house and
 partition 1 for the garage.  Most residential systems will not have partitions enabled so all devices
-are in partition 0, and the alarm system status is reflected in the "Alarm_Mode_Partition_0" attribute.
+are in partition 0.
 
+Attributes
+----------
+
+If partitions are not enabled, the only the attributes ending in "_0" will be present.
+
+- Alarm_Mode_Partition_0
+- Alarm_Mode_Partition_1
+- Alarm_Mode_Partition_2
+- Alarm_Mode_Partition_3
+
+    Arming, disarming or tripping the alarm system will cause one of the "Alarm_Mode_Partition_x"
+    attributes in the parent driver to change to one of the following enum values:
+
+    - DISARM
+    - ARM_STAY
+    - ARM_AWAY
+    - EXIT_DELAY
+    - ENTRY_DELAY
+    - ALARM_POLICE
+    - ALARM_FIRE
+    - ALARM_AUXILIARY
+
+- Entry_Delay_Partition_0
+- Entry_Delay_Partition_1
+- Entry_Delay_Partition_2
+- Entry_Delay_Partition_3
+
+    When the Alarm_Mode_Partition_x attribute changes to ENTRY_DELAY, this attribute will be updated with the number of seconds
+    the panel will wait for a valid user code to disarm the system.  If a valid user code was entered, Alarm_Mode_Partition_x
+    changes to DISARM and this attribute changes to 0.
+
+    Note that if you have a rule in alarm.com that disarms your panel when a valid code is entered on a connected z-wave door
+    lock, Alarm_Mode_Partition_x will immediately be set to DISARM and this attribute will remain 0.
+
+- Exit_Delay_Partition_0
+- Exit_Delay_Partition_1
+- Exit_Delay_Partition_2
+- Exit_Delay_Partition_3
+
+    When the Alarm_Mode_Partition_x attribute changes to EXIT_DELAY, this attribute will be updated with the number of seconds
+    the panel will wait before arming the system, allowing you to open any doors configured as entry/exit doors and trip any
+    interior motion sensors while exiting.  
+
+    If the exit delay period is extended at the alarm panel, this attribute will be updated to reflect the new exit delay period.
+
+    When the exit delay period has expired, Alarm_Mode_Partition_x changes to ARM_AWAY and this attribute changes to 0.
+
+- Error_Partition_0
+- Error_Partition_1
+- Error_Partition_2
+- Error_Partition_3
+
+   If an error occurs and is reported by the panel, this attribute will contain the error message.  This will occur for example
+   if an invalid user code was used to arm or disarm the system.  This attribute is cleared when the next command is sent to the
+   panel.
 
 Commands
 --------
