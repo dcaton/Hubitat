@@ -184,14 +184,14 @@ Commands
 
 - **alarm**
 
-This command will initiate an alarm condition.  Select the partition and type of alarm you want to initiate.
+    This command will initiate an alarm condition.  Select the partition and type of alarm you want to initiate.
 To prevent the police or fire department from showing up at your door, this command will have no effect
 unless the "Allow HE to trigger an alarm condition" setting is turned on.  If you have no need to initiate an
 alarm from HE, leave that setting off.
 
 - **armAway**
 
-This command will arm the system in arm-away mode.  If the bypass parameter is true, any open or faulted zones
+    This command will arm the system in arm-away mode.  If the bypass parameter is true, any open or faulted zones
 will automatically be bypassed.  If your alarm panel is configured for secure arming, you will need to supply
 a valid user code in order to arm the system.  If your panel is not configured for secure arming, you can omit
 this parameter or pass zero. 
@@ -202,7 +202,7 @@ leave that setting off.
  
 - **armStay**
 
-This command will arm the system in arm-stay mode.  If the bypass parameter is true, any open or faulted zones
+    This command will arm the system in arm-stay mode.  If the bypass parameter is true, any open or faulted zones
 will automatically be bypassed.  If your alarm panel is configured for secure arming, you will need to supply
 a valid user code in order to arm the system.  If your panel is not configured for secure arming, you can omit
 this parameter or pass zero.   As with armAway, the "Allow HE to send arming and disarming commands" needs to be on
@@ -210,29 +210,20 @@ for this command to have any effect.
  
 - **disarm**
 
-This command disarms the alarm system.  A valid user code must be provided.  As with armStay and armAway, 
+    This command disarms the alarm system.  A valid user code must be provided.  As with armStay and armAway, 
 the "Allow HE to send arming and disarming commands" needs to be on for this command to have any effect.
 
 - **initialize**
 
-This command will close the connection to your alarm panel and attempt to reconnect.  There should really be no
+    This command will close the connection to your alarm panel and attempt to reconnect.  There should really be no
 reason to call this command.
 
 - **refresh**
 
-This command will request a list of devices from the alarm panel, and add, delete or update the corresponding
+    This command will request a list of devices from the alarm panel, and add, delete or update the corresponding
 virtual drivers in HE.  If you add, remove or edit any devices on your alarm panel, you should use this command
 to update HE.
 
-has commands to arm and disarm the system.  These commands will only work if a
-valid alarm panel access token has been set.  If you have no need for HE to arm or disarm your
-system, leave the access token setting blank.  This is the safest way to configure the driver,
-as it will effecively be in "reporting only" mode and cannot change the alarm system's armed state.
-
-If you do want to control your alarm system via HE, please insure that your hub is sufficiently 
-protected.  You will also need a valid alarm system user code to disarm (and possibly arm) the system.
-There is nothing stopping you from hard coding an alarm system user code into a HE rule (or in Webcore,
-NodeRed, etc.).  If you do that, make sure those systems are as secure as possible.
 
 Child Devices
 =============
@@ -258,12 +249,6 @@ Known issues
    be devices that are not properly detected.  If a device on your alarm system does not have a corresponding virtual
    device in HE, please turn on all the logging options for the parent driver, click Refresh, email or post the relevant
    log entries in the HE community forum, and I will add support for the device.
-
-One More Warning
-================
-
-These drivers allow you to disarm your alarm system from HE.  If you choose to hard code a user code in a rule or in a hub variable
-or wherever, it is your responsibility to secure your hub.  
 
 
 
