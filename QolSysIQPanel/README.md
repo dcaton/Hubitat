@@ -196,7 +196,7 @@ will automatically be bypassed.  If your alarm panel is configured for secure ar
 a valid user code in order to arm the system.  If your panel is not configured for secure arming, you can omit
 this parameter or pass zero. 
 
-To prevent the system being armed accidentally, this command will have no effect unless the "Allow HE to send
+    To prevent the system being armed accidentally, this command will have no effect unless the "Allow HE to send
 arming and disarming commands" setting is turned on.  If you have no need to arm or disarm your system from HE,
 leave that setting off.
  
@@ -229,7 +229,7 @@ Child Devices
 =============
 
 Each physical sensor connected to the alarm panel is represented by a virtual device of the approprate type.
-These virtual devices are created a child devices of the alarm panel device.
+These virtual devices are created as child devices of the alarm panel virtual device.
 
 The child devices do not have any commands, they simply mirror the state of their respective physical devices.
 Generally there will be a single attribute such as "contact" or "motion" that mirrors the state of the physical device.
