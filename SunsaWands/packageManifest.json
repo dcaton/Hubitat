@@ -1,7 +1,7 @@
 {
     "packageName": "Sunsa Wands",
     "author": "Don Caton",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "minimumHEVersion": "2.2.9.130",
     "dateReleased": "2021-11-19",
     "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/LICENSE",
