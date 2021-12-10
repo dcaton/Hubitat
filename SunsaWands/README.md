@@ -57,6 +57,12 @@ Known issues
 Release History
 ===============
 
+v 1.0.5    12/10/21
+
+    Fixed typo that was causing unnecessary refreshes.
+
+    Added link to community page.
+
 v 1.0.4    11/22/21
 
     Restored WindowShade capability.
