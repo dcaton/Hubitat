@@ -7,7 +7,7 @@
     "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/LICENSE",
     "releaseNotes": "Bug fix, restored WindowShade capability until omission is fixed in HE",
     "documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/README.md",
-    "communityLink": "",
+    "communityLink": "https://community.hubitat.com/t/sunsa-wand-simple-smart-blinds/63900",
     "drivers": [
     {
       "id": "c3c4553e-e56f-4910-961a-7c42bca11744",
