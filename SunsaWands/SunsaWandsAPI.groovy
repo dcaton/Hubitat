@@ -224,7 +224,7 @@ private def setTiltLevelResponse( resp, data ){
                 //def dni = Data.device.idDevivce.toString();
                 //dni = "${device.deviceNetworkId}-${dni}"
                 
-                def dni = "${device.deviceNetworkId}-${Data.device.idDevivce}";
+                def dni = "${device.deviceNetworkId}-${Data.device.idDevice}";
                 
                 logInfo(dni);
                 
