@@ -74,7 +74,7 @@ you can go back to 4 digit user codes.  Your existing codes will remain intact.
 
     If you are already using 6 digit user codes, skip to step 2.  Otherwise, on your alarm panel,
 touch the small gray bar at the top of the screen, then choose Settings -> Advanced Settings -> 
-Enter Dealer Code -> Dealer Settings.  Scroll down to 6 Digit User Codes and check the box.
+Enter Dealer Code -> Installation -> Dealer Settings.  Scroll down to 6 Digit User Codes and check the box.
 Your existing codes will have two zeros added to the end.  Touch Ok.  Your panel may reboot.
 
 2. Touch the small gray bar at the top of the screen, then choose Settings -> Advanced Settings
@@ -82,7 +82,7 @@ Your existing codes will have two zeros added to the end.  Touch Ok.  Your panel
  Check the box for **Control4**. Confirm Ok, and wait for the panel to reboot.
 
 3. If you were using 6 digit user codes, skip to step 4.  Otherwise, touch the small gray bar
-at the top of the screen, then choose Settings -> Advanced Settings -> Enter Dealer Code -> Dealer Settings.
+at the top of the screen, then choose Settings -> Advanced Settings -> Enter Dealer Code -> Installation -> Dealer Settings.
 Scroll down to 6 Digit User Codes and uncheck the box.  The two zeros added to the end of your original 
 codes will be removed.  This may require your alarm panel to reboot.
 
@@ -169,7 +169,8 @@ If partitions are not enabled, the only the attributes ending in "_0" will be pr
     the panel will wait before arming the system, allowing you to open any doors configured as entry/exit doors and trip any
     interior motion sensors while exiting.  
 
-    If the exit delay period is extended at the alarm panel, this attribute will be updated to reflect the new exit delay period.
+    If the exit delay period is extended at the alarm panel, or by closing and then reopening an exit door before the delay expires,
+    this attribute will be updated to reflect the new exit delay period.
 
     When the exit delay period has expired, Alarm_Mode_Partition_x changes to ARM_AWAY and this attribute changes to 0.
 
@@ -255,6 +256,6 @@ Known issues
 Release History
 ===============
 
-v 1.0.0    00/00/21
+v 1.0.0    12/11/21
 
    Initial public version
