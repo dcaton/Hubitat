@@ -259,3 +259,7 @@ Release History
 v 1.0.0    12/11/21
 
    Initial public version
+
+v 1.0.1    12/16/21
+
+    Better handling and retry logic if panel is offline or unreachable by HE

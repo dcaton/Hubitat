@@ -22,6 +22,7 @@
 *
 *   Change Log:
 *   2021-11-24: Initial version
+*   2021-12-16: Better handling and retry logic if panel is unreachable
 *
 */
 
@@ -137,17 +138,15 @@ def initialize() {
     }
 
     try {
-        logTrace('attempting to connect to panel...')
+        logTrace("attempting to connect to panel at ${panelip}...");
         interfaces.rawSocket.connect(panelip, 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true, 'convertReceivedDataToString': true);
         state.lastMessageReceivedAt = now();
         runIn(checkInterval, "connectionCheck");
-        
-        if (getChildDevices().size() == 0) {
-            refresh()
-        }        
+        refresh();  // if panel was offline, we need to know its current state
     }
     catch (e) {
-        logError( "initialize error: ${e.message}" )
+        logError( "${panelip} initialize error: ${e.message}" )
+        runIn(60, "initialize");
     }
 }
 
