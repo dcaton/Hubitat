@@ -42,7 +42,7 @@ metadata {
 }
 
 preferences {
-    input(name: "closeDirection", type: "enum", options: ["Up", "Down"], title: "Close Direction", description: "", required: true, defaultValue: "Up")
+    input(name: "closeDirection", type: "enum", options: ["Up", "Down", "Left", "Right"], title: "Close Direction", description: "", required: true, defaultValue: "Up")
 }
 
 void installed() {
@@ -64,7 +64,7 @@ void open() {
 }
 
 void close() {
-     setTiltLevel(settings.closeDirection == "Down" ? 100 : -100);
+     setTiltLevel(settings.closeDirection in ["Down", "Right"] ? 100 : -100);
 }
 
 void setPosition(position) { log.warn "setPosition() not applicable to this device"; }
