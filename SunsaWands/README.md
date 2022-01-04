@@ -57,6 +57,10 @@ Known issues
 Release History
 ===============
 
+v 1.0.6    01/04/22
+
+    Added Left and Right enum values to support vertical blinds
+    
 v 1.0.5    12/10/21
 
     Fixed typo that was causing unnecessary refreshes.
