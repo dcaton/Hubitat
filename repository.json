@@ -10,7 +10,7 @@
         "Window Coverings"
       ],
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/packageManifest.json",
-      "description": "Driver for Sunsa Wands",
+      "description": "Driver for Sunsa Wands"
     },
     {
       "id": "27905c8b-7900-4f7f-a4b6-2dbb2994d7dd",
