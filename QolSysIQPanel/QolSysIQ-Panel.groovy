@@ -216,7 +216,7 @@ private boolean checkAllowArming() {
 }
         
 private boolean checkSecureArming(String partition_id, BigDecimal user_code = 0) {
-     if (getDataValue( "Secure_Arm_Partition_${partition_id}" ) && user_code == 0) {
+     if (getDataValue( "Secure_Arm_Partition_${partition_id}" ) == 'true' && user_code == 0) {
         logError( "Secure arming enabled for partition ${partition_id}.  User code must be specified in order to arm panel.")
         return false;
     }
@@ -234,10 +234,10 @@ private boolean checkPartition(String partition_id) {
 }
 
 private String _createArmCommand( String partition_id, String arming_type, BigDecimal user_code, BigDecimal delay = 0, String bypass = "" ) {
-    def command = '{ "version": 1, "source": "C4", "action": "ARMING", "nonce": "", "token": "' + accessToken + '", "partition_id":' + partition_id.toString() + '", "arming_type": "' + arming_type + '", ' ;
+    def command = '{ "version": 1, "source": "C4", "action": "ARMING", "nonce": "", "token": "' + accessToken + '", "partition_id":' + partition_id.toString() + '", "arming_type": "' + arming_type + '"' ;
     
-    if (user_code) {
-        command += '"usercode": "' + user_code.toString() + '"';
+    if (user_code != 0) {
+        command += ', "usercode": "' + user_code.toString() + '"';
     }
     
     if (arming_type == "ARM_STAY" || arming_type == "ARM_AWAY" ) {
