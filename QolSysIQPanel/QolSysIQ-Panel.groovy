@@ -55,10 +55,10 @@ metadata {
         attribute 'Exit_Delay_Partition_2', 'number'
         attribute 'Exit_Delay_Partition_3', 'number'
         
-        attribute 'Error_Partition_0', 'text'
-        attribute 'Error_Partition_1', 'text'
-        attribute 'Error_Partition_2', 'text'
-        attribute 'Error_Partition_3', 'text'
+        attribute 'Error_Partition_0', 'string'
+        attribute 'Error_Partition_1', 'string'
+        attribute 'Error_Partition_2', 'string'
+        attribute 'Error_Partition_3', 'string'
     }
 }
 
@@ -66,8 +66,8 @@ List<String> modeNames = []
 location.getModes().each { modeNames.add(it.name) };
 
 preferences {
-    input('panelip', 'text', title: 'Alarm Panel IP Address', description: '(IPv4 address in form of 192.168.1.45)', required: true)
-    input('accessToken', 'text', title: 'Alarm Panel Access Token', description: '', required: true)
+    input('panelip', 'string', title: 'Alarm Panel IP Address', description: '(IPv4 address in form of 192.168.1.45)', required: true)
+    input('accessToken', 'string', title: 'Alarm Panel Access Token', description: '', required: true)
     input( type: 'enum', name: 'DisarmMode', title: 'Set HE mode when alarm is disarmed', required: false, multiple: false, options: modeNames )
     input( type: 'enum', name: 'ArmStayMode', title: 'Set HE Mode when alarm is armed stay', required: false, multiple: false, options: modeNames )
     input( type: 'enum', name: 'ArmAwayMode', title: 'Set HE mode when alarm is armed away', required: false, multiple: false, options: modeNames )
@@ -92,6 +92,7 @@ preferences {
 
 @Field static String partialMessage = ''
 @Field static Integer checkInterval = 600
+@Field static Integer clearsocketInterval = 25
 
 //
 // Commands
@@ -139,9 +140,10 @@ def initialize() {
 
     try {
         logTrace("attempting to connect to panel at ${panelip}...");
-        interfaces.rawSocket.connect(panelip, 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true, 'convertReceivedDataToString': true);
+        interfaces.rawSocket.connect(panelip, 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true, 'convertReceivedDataToString': true;
         state.lastMessageReceivedAt = now();
         runIn(checkInterval, "connectionCheck");
+        runIn(clearsocketInterval, "clearsocketerror");
         refresh();  // if panel was offline, we need to know its current state
     }
     catch (e) {
@@ -384,6 +386,11 @@ def parse(message) {
             }
         }
     }
+}
+
+def clearsocketerror() {
+    interfaces.rawSocket.sendMessage('\n')
+    runIn(clearsocketInterval, "clearsocketerror")
 }
 
 def connectionCheck() {
