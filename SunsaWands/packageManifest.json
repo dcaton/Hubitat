@@ -1,11 +1,11 @@
 {
     "packageName": "Sunsa Wands",
     "author": "Don Caton",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "minimumHEVersion": "2.2.9.130",
-    "dateReleased": "2022-01-04",
+    "dateReleased": "2024-01-29",
     "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/LICENSE",
-    "releaseNotes": "Add left/right support for vertical blinds",
+    "releaseNotes": "Update blind name if it is changed in the mobile app (requires Refresh command on parent Blind device)",
     "documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/SunsaWands/README.md",
     "communityLink": "https://community.hubitat.com/t/sunsa-wand-simple-smart-blinds/63900",
     "drivers": [

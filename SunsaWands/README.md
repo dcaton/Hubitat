@@ -4,9 +4,9 @@ This is a Hubitat driver for Sunsa Wands.
 
 See https://www.sunsahomes.com/ for more information on this product.
 
-In order to use this driver, you need two things.  First is an "api-key" which
-you can create in the Sunda Wands mobile app. Second is your user id.  You won't
-find this in the current version of the app, so you'll have to email Sunsa for it.
+In order to use this driver, you need your user id and an api key. In the Sunda Wands
+mobile app, go to Account Settings, then API Settings. Make note of your user id and
+click on "Generate New API Key".
 
 After you have your userid and an api key, go to the Devices section in Hubitat
 and click on the "Add Virtual Device" button at the top right.
@@ -38,14 +38,14 @@ and also check the Hubitat log.
 
 Comments, suggestions, bugs, etc. please send me an email.  dcaton1220@gmail.com
 
-This driver is based on version 1.0.4 of the Sunsa Wand API, which can be found here: 
-https://app.swaggerhub.com/apis-docs/Sunsa/Sunsa/1.0.4
+This driver is based on version 1.0.6 of the Sunsa Wand API, which can be found here: 
+https://app.swaggerhub.com/apis-docs/Sunsa/Sunsa/1.0.6
 
 
 Known issues
 ============
 
-   1. The Sunsa API does not currently return the value of the temperature or light sensors in the wand.
+   1. The Sunsa API does not currently return the value of the light sensor in the wand.
       Therefore, these values will never change or fire events until a new API is released.
 
    2. The API does not currently have any way of notifying when the state of a wand changes 
@@ -53,9 +53,20 @@ Known issues
       may not be the actual state.  I intend to add an optional polling mechanism which will
       periodically query the Sunsa API to keep Hubitat's state somewhat in sync.
 
+        Beacuse there are no push notifications available, the values for the temperature settings
+        will never be updated unless you send a Refresh command to the parent Blinds device (which
+        will refresh the values for all blinds).
+
+        Also, if you change the name of a blind in the mobile app, it will not update in HE until
+        you send a Refresh command to the parent Blinds device.
+
 
 Release History
 ===============
+
+v 1.0.7    01/29/24
+
+    Refresh updates blind name if it is changed in the mobile app.
 
 v 1.0.6    01/04/22
 

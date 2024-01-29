@@ -27,7 +27,7 @@
 *
 */
 
-def version() {"v1.0.6"}
+def version() {"v1.0.7"}
 
 import hubitat.helper.InterfaceUtils
 import groovy.json.JsonSlurper
