@@ -182,8 +182,9 @@ private def CreateChildDevice(Data){
         def currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
         if (currentchild == null) {
             log.debug "Creating ${Data.name} child for ${dni}"
-            currentchild = addChildDevice("dcaton.sunsawands", "Sunsa Wand", dni, [name: "${Data.name}", label: "${Data.name}", isComponent: true])
+            currentchild = addChildDevice("dcaton.sunsawands", "Sunsa Wand", dni, [name: "Sunsa Wand"", label: "${Data.name}", isComponent: true])
         }
+        currentchild.setLabel(Data.name.toString());
         currentchild.updateDataValue("idDevice", Data.idDevice.toString());
         currentchild.updateDataValue("blindType", Data.blindType.text);
         currentchild.updateDataValue("blindTypeValue", Data.blindType.value.toString());
