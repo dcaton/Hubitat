@@ -141,7 +141,7 @@ def initialize() {
 
     try {
         logTrace("attempting to connect to panel at ${panelip}...");
-        interfaces.rawSocket.connect(panelip, 12345, 'byteInterface': false, 'secureSocket': true, 'ignoreSSLIssues': true, 'convertReceivedDataToString': true);
+        interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (checkInterval * 1000), bufferSize: 10240], panelip, 12345 );
         state.lastMessageReceivedAt = now();
         runIn(checkInterval, "connectionCheck");
         refresh();  // if panel was offline, we need to know its current state
