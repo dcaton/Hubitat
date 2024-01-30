@@ -34,6 +34,7 @@ metadata {
         capability 'Initialize'
         capability 'Refresh'
         capability 'Actuator'
+        capability 'PresenceSensor'
 
         command 'armStay', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'bypass', type: 'ENUM', description: 'Bypass open or faulted sensors', constraints: ['No', 'Yes']], [name: 'user_code', type: 'NUMBER', description: 'User code (optional if panel is configured to arm without a user code' ]]
         command 'armAway', [[name: 'partition_id', type: 'ENUM', description: 'Partition number to arm', constraints: [0, 1, 2, 3] ], [name: 'bypass', type: 'ENUM', description: 'Bypass open or faulted sensors', constraints: ['No', 'Yes']], [name:'exitDelay*', type: 'NUMBER', description: 'Exit delay in seconds'], [name: 'user_code', type: 'NUMBER', description: 'User code (optional if panel is configured to arm without a user code' ]]
@@ -337,6 +338,7 @@ def parse(message) {
                             
                             case 'DISARM':
                                 processEvent( "Entry_Delay_Partition_${payload.partition_id}", 0 )
+                                processEvent( 'presense', 'present')
                                 setHEMode( payload.arming_type, DisarmMode )
                                 break
 
@@ -346,6 +348,7 @@ def parse(message) {
 
                             case 'ARM_AWAY':
                                 processEvent( "Exit_Delay_Partition_${payload.partition_id}", 0 )
+                                processEvent( 'presense', 'not present')
                                 setHEMode( payload.arming_type, ArmAwayMode )
                                 break
                             
