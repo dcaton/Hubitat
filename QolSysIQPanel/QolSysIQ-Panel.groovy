@@ -89,6 +89,7 @@ preferences {
 @Field static final String drvGlass = 'QolSys IQ Glass Break Sensor'
 @Field static final String drvPendant = 'QolSys IQ Auxiliary Pendant'
 @Field static final String drvTakeover = 'QolSys IQ Takeover Module'
+@Field static final String drvShock = 'QolSys IQ Takeover Module'
 
 @Field static String partialMessage = ''
 @Field static Integer checkInterval = 600
@@ -438,33 +439,50 @@ private processSummary(payload) {
             def zoneList = it.zone_list
 
             zoneList.each {
-                if ( it.type == 'Door_Window' ) {
-                    createChildDevice( drvDoorWindow, it, partition, partitions )
-                }
-                else if ( it.type == 'GlassBreak' | it.type == 'Panel Glass Break' ) {
-                    createChildDevice( drvGlass, it, partition, partitions )
-                }
-                else if ( it.type == 'SmokeDetector' | it.type == 'Smoke_M' | it.type == 'Heat' ) {
-                    createChildDevice( drvSmoke, it, partition, partitions )
-                }
-                else if ( it.type == 'CODetector' ) {
-                    createChildDevice( drvCO, it, partition, partitions )
-                }
-                else if ( it.type == 'Motion' | it.type == 'Panel Motion' ) {
-                    createChildDevice( drvMotion, it, partition, partitions )
-                }
-                else if ( it.type == 'Water' ) {
-                    createChildDevice( drvWater, it, partition, partitions )
-                }
-                else if ( it.type == 'Auxiliary Pendant' ) {
-                    createChildDevice( drvPendant, it, partition, partitions )
-                }
-                else if ( it.type == 'TakeoverModule' ) {
-                    createChildDevice( drvTakeover, it, partition, partitions )
-                }
-                else {
-                    logError("Unhandled device type ${it.type}")
-                    state.unrecognizedDevices = "true";
+                switch (it.type) {
+                    case [ 'Door_Window', 'Tilt', 'Doorbell' ]:
+                        createChildDevice( drvDoorWindow, it, partition, partitions )
+                        break
+                
+                    case [ 'GlassBreak', 'Panel Glass Break' ]:
+                        createChildDevice( drvGlass, it, partition, partitions )
+                        break
+                
+                    case [ 'SmokeDetector', 'Smoke_M', 'Heat' ]:
+                        createChildDevice( drvSmoke, it, partition, partitions )
+                        break
+                
+                    case 'CODetector':
+                        createChildDevice( drvCO, it, partition, partitions )
+                        break
+                
+                    case [ 'Motion', 'Panel Motion' ]:
+                        createChildDevice( drvMotion, it, partition, partitions )
+                        break
+                
+                    case 'Water':
+                        createChildDevice( drvWater, it, partition, partitions )
+                        break
+                
+                    case 'Auxiliary Pendant':
+                        createChildDevice( drvPendant, it, partition, partitions )
+                        break
+                
+                    case 'TakeoverModule':
+                        createChildDevice( drvTakeover, it, partition, partitions )
+                        break
+                        
+                    case 'Shock':
+                        createChildDevice( drvShock, it, partition, partitions )
+                        break
+
+                    case [ 'Siren', 'Keypad', 'Bluetooth' ]:
+                        // ignore types that don't make sense as a child device
+                        break
+                
+                    default:
+                        logError("Unhandled device type ${it.type}")
+                        state.unrecognizedDevices = "true";
                 }
             }
 
@@ -475,7 +493,7 @@ private processSummary(payload) {
             getChildDevices().each {
                 def zoneid = it.id
 
-                if (it.partition_id == partitionId && zoneList?.find { it.id = zoneid } == null ) {
+                if (it.partition_id == partitionId && zoneList?.find { it.id == zoneid } == null ) {
                     logInfo( "Deleting orphaned device ${it.deviceNetworkId}" )
                     deleteChildDevice(it.deviceNetworkId)
                 }   
