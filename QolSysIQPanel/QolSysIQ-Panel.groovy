@@ -517,9 +517,9 @@ private createChildDevice(deviceName, zone, partition, partitions) {
         else {
             log.debug "Updating existing child device '${deviceName}' dni: '${dni}'"
         }
+        currentchild.label = name
         currentchild.updateDataValue('id', zone.id.toString())
         currentchild.updateDataValue('type', zone.type)
-        currentchild.updateDataValue('name', zone.name)
         currentchild.updateDataValue('group', zone.group)
         currentchild.updateDataValue('zone_id', zone.zone_id.toString())
         currentchild.updateDataValue('zone_physical_type', zone.zone_physical_type.toString())
