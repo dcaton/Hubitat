@@ -63,15 +63,9 @@ metadata {
     }
 }
 
-List<String> modeNames = []
-location.getModes().each { modeNames.add(it.name) };
-
 preferences {
     input('panelip', 'text', title: 'Alarm Panel IP Address', description: '(IPv4 address in form of 192.168.1.45)', required: true)
     input('accessToken', 'text', title: 'Alarm Panel Access Token', description: '', required: true)
-    input( type: 'enum', name: 'DisarmMode', title: 'Set HE mode when alarm is disarmed', required: false, multiple: false, options: modeNames )
-    input( type: 'enum', name: 'ArmStayMode', title: 'Set HE Mode when alarm is armed stay', required: false, multiple: false, options: modeNames )
-    input( type: 'enum', name: 'ArmAwayMode', title: 'Set HE mode when alarm is armed away', required: false, multiple: false, options: modeNames )
     input( type: 'bool', name: 'AllowArmAndDisarm', title: 'Allow HE to send arming and disarming commands', required: false, defaultValue: false )
     input( type: 'bool', name: 'AllowTriggerAlarm', title: 'Allow HE to trigger an alarm condition', required: false, defaultValue: false )
 
@@ -341,11 +335,9 @@ def parse(message) {
                                 if (payload.partition_id == 0) {
                                     processEvent( 'presense', 'present')
                                 }
-                                setHEMode( payload.arming_type, DisarmMode )
                                 break
 
                             case 'ARM_STAY':
-                                setHEMode( payload.arming_type, ArmStayMode )
                                 break
 
                             case 'ARM_AWAY':
@@ -353,7 +345,6 @@ def parse(message) {
                                 if (payload.partition_id == 0) {
                                     processEvent( 'presense', 'not present')
                                 }
-                                setHEMode( payload.arming_type, ArmAwayMode )
                                 break
                             
                             default:
@@ -410,18 +401,6 @@ def connectionCheck() {
 //
 // Internal stuff
 //
-
-private setHEMode(event, mode) {
-    if (mode != null) {
-        if (location.getModes().find { e -> e.name == mode } ) {
-            location.setMode(mode)
-            logInfo( "Set mode to ${mode}")
-        }
-        else {
-            logError( "${event} attempting to set non-existing mode ${mode}; please update configuration for this device");
-        }
-    }
-}
 
 private sendCommand(String s) {
     logDebug("sendCommand ${s}")
