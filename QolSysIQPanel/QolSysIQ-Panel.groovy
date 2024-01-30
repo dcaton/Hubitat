@@ -338,7 +338,9 @@ def parse(message) {
                             
                             case 'DISARM':
                                 processEvent( "Entry_Delay_Partition_${payload.partition_id}", 0 )
-                                processEvent( 'presense', 'present')
+                                if (payload.partition_id == 0) {
+                                    processEvent( 'presense', 'present')
+                                }
                                 setHEMode( payload.arming_type, DisarmMode )
                                 break
 
@@ -348,7 +350,9 @@ def parse(message) {
 
                             case 'ARM_AWAY':
                                 processEvent( "Exit_Delay_Partition_${payload.partition_id}", 0 )
-                                processEvent( 'presense', 'not present')
+                                if (payload.partition_id == 0) {
+                                    processEvent( 'presense', 'not present')
+                                }
                                 setHEMode( payload.arming_type, ArmAwayMode )
                                 break
                             
