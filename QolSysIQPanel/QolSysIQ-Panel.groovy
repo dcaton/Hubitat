@@ -390,16 +390,15 @@ def parse(message) {
     }
 }
 
-def connectionCheck() {
+private connectionCheck() {
     def now = now();
     
-    if ( now - state.lastMessageReceivedAt > (checkInterval * 1000)) { 
-        logError("no messages received in ${(now - state.lastMessageReceivedAt)/60000} minutes, reconnecting...");
+    if ( now - state.lastMessageReceivedAt > 10000) { 
+        logWarn("no messages received in ${(now - state.lastMessageReceivedAt)/60000} minutes, reconnecting...");
         initialize();
     }
     else {
         logDebug("connectionCheck ok");
-        runIn(checkInterval, "connectionCheck");
     }
 }
 
@@ -502,11 +501,11 @@ private createChildDevice(deviceName, zone, partition, partitions) {
     try {
         def currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
         if (currentchild == null) {
-            log.debug "Creating child device '${deviceName}' dni: '${dni}'"
+            logDebug "Creating child device '${deviceName}' dni: '${dni}'"
             currentchild = addChildDevice('dcaton-qolsysiqpanel', deviceName, dni, [name: deviceName /* "${zone.name}" */, label: name, isComponent: true])
         }
         else {
-            log.debug "Updating existing child device '${deviceName}' dni: '${dni}'"
+            logDebug "Updating existing child device '${deviceName}' dni: '${dni}'"
         }
         currentchild.label = name
         currentchild.updateDataValue('id', zone.id.toString())
