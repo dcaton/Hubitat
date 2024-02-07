@@ -137,8 +137,7 @@ def initialize() {
         logTrace("attempting to connect to panel at ${panelip}...");
         interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (checkInterval * 1000), bufferSize: 10240], panelip, 12345 );
         state.lastMessageReceivedAt = now();
-        runIn(checkInterval, "connectionCheck");
-        refresh();  // if panel was offline, we need to know its current state
+        refresh();
     }
     catch (e) {
         logError( "${panelip} initialize error: ${e.message}" )
@@ -254,20 +253,25 @@ def socketStatus(String message) {
         // This is some error condition that repeats every 15ms.
         // Probably a bug in the rawsocket code.  Close the connection to prevent
         // the log being flooded with error messages.
+        // Note: this may no longer be needed
         interfaces.rawSocket.close();       
         logError( "socketStatus: ${message}");
-        logError( "Closing connection to alarm panel" );
+        logError( "Closing connection to alarm panel" )
+        initialize()
     }
-    else if (message != "receive error: Read timed out") {
-        // Timeouts don't seem to hurt anything and just clutter up the logs
-        // The alarm panel may not send any data for several minutes, especially
-        // if nothing is happening (doors opening/closing, etc.)
+    else if (message == "receive error: Read timed out") {
+        logWarn("no messages received in ${(now() - state.lastMessageReceivedAt)/60000} minutes, sending INFO command to panel to test connection...");
+        refresh();
+        runIn(10, "connectionCheck")
+    }
+    else {
         logError( "socketStatus: ${message}")
+        initialize()
     }
 }
 
 def parse(message) {
-    state.lastMessageReceived = new Date(now()).toString();
+    state.lastMessageReceived = new Date(now()).toString()
     state.lastMessageReceivedAt = now();
 
     if (message.length() > 0) {
@@ -333,7 +337,7 @@ def parse(message) {
                             case 'DISARM':
                                 processEvent( "Entry_Delay_Partition_${payload.partition_id}", 0 )
                                 if (payload.partition_id == 0) {
-                                    processEvent( 'presense', 'present')
+                                    sendEvent( name: 'presence', value: 'present', isStateChanged: true )
                                 }
                                 break
 
@@ -343,7 +347,7 @@ def parse(message) {
                             case 'ARM_AWAY':
                                 processEvent( "Exit_Delay_Partition_${payload.partition_id}", 0 )
                                 if (payload.partition_id == 0) {
-                                    processEvent( 'presense', 'not present')
+                                    sendEvent( name: 'presence', value: 'not present', isStateChanged: true )
                                 }
                                 break
                             
@@ -378,6 +382,7 @@ def parse(message) {
             }
             catch (ex) {
                 // can't parse into json, probably a partial message that fills the socket buffer
+                logError(ex.toString())
                 logDebug("storing partial message '${message}'")
                 partialMessage = message
             }
