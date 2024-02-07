@@ -1,8 +1,9 @@
+/* groovylint-disable BuilderMethodWithSideEffects, DuplicateListLiteral, DuplicateMapLiteral, DuplicateNumberLiteral, DuplicateStringLiteral, FactoryMethodName, ImplicitClosureParameter, MethodCount, MethodParameterTypeRequired, MethodSize, NestedBlockDepth, PublicMethodsBeforeNonPublicMethods, UnnecessaryGetter */
 /*
 *  QolSys IQ Alarm Panel Driver
 *
 *  Copyright 2021 Don Caton <dcaton1220@gmail.com>
-* 
+*
 *  Based on research and code from the following members of
 *  the HomeAssistant community (https://community.home-assistant.io/)
 *   @mzac
@@ -28,9 +29,11 @@
 
 import groovy.json.JsonSlurper
 import groovy.transform.Field
+import com.hubitat.app.ChildDeviceWrapper
 
+/* groovylint-disable-next-line CompileStatic */
 metadata {
-    definition (name: 'QolSys IQ Alarm Panel', namespace: 'dcaton-qolsysiqpanel', author: 'Don Caton', importUrl: 'https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Panel.groovy') {
+    definition(name: 'QolSys IQ Alarm Panel', namespace: 'dcaton-qolsysiqpanel', author: 'Don Caton', importUrl: 'https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Panel.groovy') {
         capability 'Initialize'
         capability 'Refresh'
         capability 'Actuator'
@@ -45,7 +48,7 @@ metadata {
         attribute 'Alarm_Mode_Partition_1', 'enum', ['DISARM', 'ENTRY_DELAY', 'EXIT_DELAY', 'ARM_STAY', 'ARM_AWAY', 'ALARM_POLICE', 'ALARM_FIRE', 'ALARM_AUXILIARY']
         attribute 'Alarm_Mode_Partition_2', 'enum', ['DISARM', 'ENTRY_DELAY', 'EXIT_DELAY', 'ARM_STAY', 'ARM_AWAY', 'ALARM_POLICE', 'ALARM_FIRE', 'ALARM_AUXILIARY']
         attribute 'Alarm_Mode_Partition_3', 'enum', ['DISARM', 'ENTRY_DELAY', 'EXIT_DELAY', 'ARM_STAY', 'ARM_AWAY', 'ALARM_POLICE', 'ALARM_FIRE', 'ALARM_AUXILIARY']
-        
+
         attribute 'Entry_Delay_Partition_0', 'number'
         attribute 'Entry_Delay_Partition_1', 'number'
         attribute 'Entry_Delay_Partition_2', 'number'
@@ -55,7 +58,7 @@ metadata {
         attribute 'Exit_Delay_Partition_1', 'number'
         attribute 'Exit_Delay_Partition_2', 'number'
         attribute 'Exit_Delay_Partition_3', 'number'
-        
+
         attribute 'Error_Partition_0', 'text'
         attribute 'Error_Partition_1', 'text'
         attribute 'Error_Partition_2', 'text'
@@ -64,10 +67,10 @@ metadata {
 }
 
 preferences {
-    input('panelip', 'text', title: 'Alarm Panel IP Address', description: '(IPv4 address in form of 192.168.1.45)', required: true)
-    input('accessToken', 'text', title: 'Alarm Panel Access Token', description: '', required: true)
-    input( type: 'bool', name: 'AllowArmAndDisarm', title: 'Allow HE to send arming and disarming commands', required: false, defaultValue: false )
-    input( type: 'bool', name: 'AllowTriggerAlarm', title: 'Allow HE to trigger an alarm condition', required: false, defaultValue: false )
+    input(type: 'string', name: 'panelip', title: 'Alarm Panel IP Address', description: '(IPv4 address in form of 192.168.1.45)', required: true)
+    input(type: 'string', name: 'accessToken', title: 'Alarm Panel Access Token', description: 'Token obtained from alarm panel', required: true)
+    input(type: 'bool', name: 'AllowArmAndDisarm', title: 'Allow HE to send arming and disarming commands', required: false, defaultValue: false)
+    input(type: 'bool', name: 'AllowTriggerAlarm', title: 'Allow HE to trigger an alarm condition', required: false, defaultValue: false)
 
     input 'logInfo', 'bool', title: 'Show Info Logs?',  required: false, defaultValue: true
     input 'logWarn', 'bool', title: 'Show Warning Logs?', required: false, defaultValue: true
@@ -93,35 +96,35 @@ preferences {
 // Commands
 //
 
-def installed() {
+void installed() {
     logTrace('installed()')
     updated()
     runIn(1800, logsOff)
 }
 
-def uninstalled() {
+void uninstalled() {
     logTrace('uninstalled()')
     unschedule()
     interfaces.rawSocket.close()
 }
 
-def updated() {
+void updated() {
     logTrace('updated()')
     initialize()
     refresh()
 }
 
-def configure() {
+void configure() {
     logTrace('configure()')
     unschedule()
 }
 
-def initialize() {
+void initialize() {
     logTrace('initialize()')
     unschedule()
-    interfaces.rawSocket.close();
+    interfaces.rawSocket.close()
     state.clear()
-    partialMessage = '';
+    partialMessage = ''
 
     if (!panelip) {
         logError 'IP Address of alarm panel not configured'
@@ -134,113 +137,110 @@ def initialize() {
     }
 
     try {
-        logTrace("attempting to connect to panel at ${panelip}...");
-        interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (checkInterval * 1000), bufferSize: 10240], panelip, 12345 );
-        state.lastMessageReceivedAt = now();
-        refresh();
+        logTrace("attempting to connect to panel at ${panelip}...")
+        interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (checkInterval * 1000), bufferSize: 10240], panelip, 12345 )
+        state.lastMessageReceivedAt = now()
+        refresh()
     }
     catch (e) {
         logError( "${panelip} initialize error: ${e.message}" )
-        runIn(60, "initialize");
+        runIn(60, 'initialize')
     }
 }
 
-def refresh() {
+void refresh() {
     logTrace('refresh()')
-    def msg = '{ "nonce": "", "action": "INFO", "info_type": "SUMMARY", "version": 1, "source": "C4", "token": "' + accessToken + '"}'
+    String msg = '{ "nonce": "", "action": "INFO", "info_type": "SUMMARY", "version": 1, "source": "C4", "token": "' + accessToken + '"}'
     sendCommand(msg)
 }
 
-def armStay( String partition_id, String bypass, BigDecimal user_code = 0 ) {
-    logTrace( "armStay partition ${partition_id}" )
+void armStay( String partitionId, String bypass, BigDecimal userCode = 0 ) {
+    logTrace( "armStay partition ${partitionId}" )
 
-    if (checkAllowArming() && checkSecureArming(partition_id, user_code) && checkPartition(partition_id)) {
-        def msg = _createArmCommand( partition_id, "ARM_STAY", user_code, 0, bypass);
-        processEvent( "Error_Partition_${partition_id}", "(No error)" );
-        sendCommand(msg);
+    if (checkAllowArming() && checkSecureArming(partitionId, userCode) && checkPartition(partitionId)) {
+        String msg = createArmCommand( partitionId, 'ARM_STAY', userCode, 0, bypass)
+        processEvent( "Error_Partition_${partitionId}", '(No error)' )
+        sendCommand(msg)
     }
 }
 
-def armAway( String partition_id, String bypass, BigDecimal delay, BigDecimal user_code = 0 ) {
-    logTrace( "armAway partition ${partition_id}" )
+void armAway( String partitionId, String bypass, BigDecimal delay, BigDecimal userCode = 0 ) {
+    logTrace( "armAway partition ${partitionId}" )
 
-    if (checkAllowArming() && checkSecureArming(partition_id, user_code) && checkPartition(partition_id)) {
-        def msg = _createArmCommand( partition_id, "ARM_AWAY", user_code, delay, bypass);
-        processEvent( "Error_Partition_${partition_id}", "(No error)" );
-        sendCommand(msg);
+    if (checkAllowArming() && checkSecureArming(partitionId, user_code) && checkPartition(partitionId)) {
+        String msg = createArmCommand( partitionId, 'ARM_AWAY', userCode, delay, bypass)
+        processEvent( "Error_Partition_${partitionId}", '(No error)' )
+        sendCommand(msg)
     }
 }
 
-def disarm( String partition_id, BigDecimal user_code ) {
-    logTrace( "disarm partition ${partition_id} usercode ${user_code}" )
+void disarm( String partitionId, BigDecimal userCode ) {
+    logTrace( "disarm partition ${partitionId}" )
 
-    if (!user_code) {
+    if (!userCode) {
         logError( 'Alarm panel user code not specified.  You cannot disarm the system without a user code.')
-        return
     }
-
-    if (checkAllowArming() && checkPartition(partition_id)) {
-        def msg = _createArmCommand( partition_id, "DISARM", user_code);
-        processEvent( "Error_Partition_${partition_id}", "(No error)" );
-        sendCommand(msg);
+    else if (checkAllowArming() && checkPartition(partitionId)) {
+        String msg = createArmCommand( partitionId, 'DISARM', userCode)
+        processEvent( "Error_Partition_${partitionId}", '(No error)' )
+        sendCommand(msg)
     }
 }
 
-def alarm( String partition_id, String alarm_type ) {
-    logTrace( "initiate alarm ${alarm_type}, partition ${partition_id}" )
+void alarm( String partitionId, String alarmType ) {
+    logTrace( "initiate alarm ${alarmType}, partition ${partitionId}" )
 
-    if (! (Boolean)settings.AllowTriggerAlarm) {
-        logError( "AllowTriggerAlarm setting must be enabled in order to initiate an alarm.")
-        return;
+    if (!(Boolean)settings.AllowTriggerAlarm) {
+        logError( 'AllowTriggerAlarm setting must be enabled in order to initiate an alarm.')
     }
-
-    if (checkPartition(partition_id)) {
-        def msg = '{ "nonce": "", "action": "ALARM", "alarm_type": "' + alarm_type + '", "version": 1, "source": "C4", "token": "' + accessToken + '", "partition_id":' + partition_id.toString() + ' }'
+    else if (checkPartition(partitionId)) {
+        String msg = '{ "nonce": "", "action": "ALARM", "alarm_type": "' + alarmType + '", "version": 1, "source": "C4", "token": "' + accessToken + '", "partition_id":' + partitionId.toString() + ' }'
         logTrace( "initiate alarm: ${msg}" )
-        processEvent( "Error_Partition_${partition_id}", "(No error)" );
-        sendCommand(msg);
+        processEvent( "Error_Partition_${partitionId}", '(No error)' )
+        sendCommand(msg)
     }
 }
 
 private boolean checkAllowArming() {
-    def allow = (Boolean)settings.AllowArmAndDisarm;
-    if (! allow) {
-        logError( "AllowArmAndDisarm setting must be enabled in order to use arm and disarm commands.")
+    Boolean allow = (Boolean)settings.AllowArmAndDisarm
+    if (!allow) {
+        logError( 'AllowArmAndDisarm setting must be enabled in order to use arm and disarm commands.')
     }
-    return allow;
-}
-        
-private boolean checkSecureArming(String partition_id, BigDecimal user_code = 0) {
-     if (getDataValue( "Secure_Arm_Partition_${partition_id}" ) && user_code == 0) {
-        logError( "Secure arming enabled for partition ${partition_id}.  User code must be specified in order to arm panel.")
-        return false;
-    }
-    
-    return true;
+    return allow
 }
 
-private boolean checkPartition(String partition_id) {
-    if (partition_id.toInteger() >= getDataValue( 'Partitions' ).toInteger()) {
-        logError( "Partition ${partition_id} is not enabled in the alarm panel.")
-        return false;
+private boolean checkSecureArming(String partitionId, BigDecimal userCode = 0) {
+    if (getDataValue( "Secure_Arm_Partition_${partitionId}" ) && userCode == 0) {
+        logError( "Secure arming enabled for partition ${partitionId}.  User code must be specified in order to arm panel.")
+        return false
     }
-    
-    return true;
+
+    return true
 }
 
-private String _createArmCommand( String partition_id, String arming_type, BigDecimal user_code, BigDecimal delay = 0, String bypass = "" ) {
-    def command = '{ "version": 1, "source": "C4", "action": "ARMING", "nonce": "", "token": "' + accessToken + '", "partition_id":' + partition_id.toString() + '", "arming_type": "' + arming_type + '", ' ;
-    
-    if (user_code) {
-        command += '"usercode": "' + user_code.toString() + '"';
+private boolean checkPartition(String partitionId) {
+    if (partitionId.toInteger() >= getDataValue( 'Partitions' ).toInteger()) {
+        logError( "Partition ${partitionId} is not enabled in the alarm panel.")
+        return false
     }
-    
-    if (arming_type == "ARM_STAY" || arming_type == "ARM_AWAY" ) {
-        command += ', "delay": ' + delay.toString() + ', "bypass": ' + (bypass == "Yes" ? "true" : "false");
+
+    return true
+}
+
+/* groovylint-disable-next-line FactoryMethodName */
+private String createArmCommand( String partitionId, String armingType, BigDecimal userCode, BigDecimal delay = 0, String bypass = '' ) {
+    String command = '{ "version": 1, "source": "C4", "action": "ARMING", "nonce": "", "token": "' + accessToken + '", "partition_id":' + partitionId + '", "arming_type": "' + armingType + '", '
+
+    if (userCode) {
+        command += '"usercode": "' + userCode + '"'
     }
-    
-    command += '}';
-    
+
+    if (arming_type == 'ARM_STAY' || arming_type == 'ARM_AWAY' ) {
+        command += ', "delay": ' + delay + ', "bypass": ' + (bypass == 'Yes' ? 'true' : 'false')
+    }
+
+    command += '}'
+
     return command
 }
 
@@ -248,21 +248,21 @@ private String _createArmCommand( String partition_id, String arming_type, BigDe
 // Socket stuff
 //
 
-def socketStatus(String message) {
-    if (message == "receive error: String index out of range: -1") {
+void socketStatus(String message) {
+    if (message == 'receive error: String index out of range: -1') {
         // This is some error condition that repeats every 15ms.
         // Probably a bug in the rawsocket code.  Close the connection to prevent
         // the log being flooded with error messages.
         // Note: this may no longer be needed
-        interfaces.rawSocket.close();       
-        logError( "socketStatus: ${message}");
-        logError( "Closing connection to alarm panel" )
+        interfaces.rawSocket.close()
+        logError( "socketStatus: ${message}")
+        logError( 'Closing connection to alarm panel' )
         initialize()
     }
-    else if (message == "receive error: Read timed out") {
-        logWarn("no messages received in ${(now() - state.lastMessageReceivedAt)/60000} minutes, sending INFO command to panel to test connection...");
-        refresh();
-        runIn(10, "connectionCheck")
+    else if (message == 'receive error: Read timed out') {
+        logWarn("no messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, sending INFO command to panel to test connection...")
+        refresh()
+        runIn(10, 'connectionCheck')
     }
     else {
         logError( "socketStatus: ${message}")
@@ -270,18 +270,17 @@ def socketStatus(String message) {
     }
 }
 
-def parse(message) {
+void parse(String message) {
     state.lastMessageReceived = new Date(now()).toString()
-    state.lastMessageReceivedAt = now();
+    state.lastMessageReceivedAt = now()
 
     if (message.length() > 0) {
-
         logDebug("parse() received ${message.length()} bytes : '${message}'")
 
-        if (message.length() >= 3 && message.substring(0,3) == 'ACK') {
+        if (message.length() >= 3 && message.substring(0, 3) == 'ACK') {
             // This is sent by the panel when a command has been received
-            partialMessage = '';
-            logDebug("'ACK' received");
+            partialMessage = ''
+            logDebug("'ACK' received")
         }
         else {
             if (partialMessage != null && partialMessage.length() > 0) {
@@ -289,7 +288,7 @@ def parse(message) {
             }
 
             try {
-                def payload = new JsonSlurper().parseText(message)
+                Object payload = new JsonSlurper().parseText(message)
                 logDebug("json: ${payload}")
 
                 switch (payload.event) {
@@ -328,12 +327,12 @@ def parse(message) {
                         switch (payload.arming_type) {
                             case 'EXIT_DELAY':
                                 processEvent( "Exit_Delay_Partition_${payload.partition_id}", payload.delay )
-                                break;
-                            
+                                break
+
                             case 'ENTRY_DELAY':
                                 processEvent( "Entry_Delay_Partition_${payload.partition_id}", payload.delay )
-                                break;
-                            
+                                break
+
                             case 'DISARM':
                                 processEvent( "Entry_Delay_Partition_${payload.partition_id}", 0 )
                                 if (payload.partition_id == 0) {
@@ -350,10 +349,10 @@ def parse(message) {
                                     sendEvent( name: 'presence', value: 'not present', isStateChanged: true )
                                 }
                                 break
-                            
+
                             default:
                                 logError("Unhandled ARMING message: ${message}")
-                                break;
+                                break
                         }
                         break
 
@@ -362,17 +361,17 @@ def parse(message) {
 
                         // payload.alarm_type can be "POLICE", "FIRE" OR "AUXILIARY"
                         // If it's empty, append "INTRUSION"
-                    
+
                         // Note there is no distinction made between an audible and silent alarm,
                         // or an alarm initiated by a sensor vs an alarm initiated on the keypad
 
-                        processEvent( "Alarm_Mode_Partition_${payload.partition_id}", "ALARM_" + payload.alarm_type )
+                        processEvent( "Alarm_Mode_Partition_${payload.partition_id}", 'ALARM_' + payload.alarm_type )
                         break
-                    
+
                     case 'ERROR':
-                        logInfo("Error received: '${payload.error_type}' '${payload.description}'");
+                        logInfo("Error received: '${payload.error_type}' '${payload.description}'")
                         processEvent( "Error_Partition_${payload.partition_id}", "${payload.error_type}: ${payload.description}" )
-                        break;
+                        break
 
                     default:
                         logError("Unhandled message: ${message}")
@@ -390,15 +389,16 @@ def parse(message) {
     }
 }
 
-private connectionCheck() {
-    def now = now();
-    
-    if ( now - state.lastMessageReceivedAt > 10000) { 
-        logWarn("no messages received in ${(now - state.lastMessageReceivedAt)/60000} minutes, reconnecting...");
-        initialize();
+/* groovylint-disable-next-line UnusedPrivateMethod */
+private void connectionCheck() {
+    def now = now()
+
+    if ( now - state.lastMessageReceivedAt > 10000) {
+        logWarn("no messages received in ${(now - state.lastMessageReceivedAt) / 60000} minutes, reconnecting...")
+        initialize()
     }
     else {
-        logDebug("connectionCheck ok");
+        logDebug('connectionCheck ok')
     }
 }
 
@@ -406,24 +406,24 @@ private connectionCheck() {
 // Internal stuff
 //
 
-private sendCommand(String s) {
+private void sendCommand(String s) {
     logDebug("sendCommand ${s}")
-    interfaces.rawSocket.sendMessage(s)    
+    interfaces.rawSocket.sendMessage(s)
 }
 
-private processSummary(payload) {
+private void processSummary(payload) {
     logTrace 'processSummary'
 
     updateDataValue( 'Partitions', payload.partition_list.size().toString() )
 
-    def partitions = payload.partition_list.size() > 1
+    boolean partitions = payload.partition_list.size() > 1
 
     payload.partition_list.each {
         try {
             processEvent( "Alarm_Mode_Partition_${it.partition_id}", it.status )
             updateDataValue( "Secure_Arm_Partition_${it.partition_id}", it.secure_arm.toString() )
             updateDataValue( "Partition ${it.partition_id} Name", it.name )
-            state.unrecognizedDevices = "false";
+            state.unrecognizedDevices = 'false'
 
             def partition = it
             def zoneList = it.zone_list
@@ -433,35 +433,35 @@ private processSummary(payload) {
                     case [ 'Door_Window', 'Tilt', 'Doorbell' ]:
                         createChildDevice( drvDoorWindow, it, partition, partitions )
                         break
-                
+
                     case [ 'GlassBreak', 'Panel Glass Break' ]:
                         createChildDevice( drvGlass, it, partition, partitions )
                         break
-                
+
                     case [ 'SmokeDetector', 'Smoke_M', 'Heat' ]:
                         createChildDevice( drvSmoke, it, partition, partitions )
                         break
-                
+
                     case 'CODetector':
                         createChildDevice( drvCO, it, partition, partitions )
                         break
-                
+
                     case [ 'Motion', 'Panel Motion' ]:
                         createChildDevice( drvMotion, it, partition, partitions )
                         break
-                
+
                     case 'Water':
                         createChildDevice( drvWater, it, partition, partitions )
                         break
-                
+
                     case 'Auxiliary Pendant':
                         createChildDevice( drvPendant, it, partition, partitions )
                         break
-                
+
                     case 'TakeoverModule':
                         createChildDevice( drvTakeover, it, partition, partitions )
                         break
-                        
+
                     case 'Shock':
                         createChildDevice( drvShock, it, partition, partitions )
                         break
@@ -469,10 +469,10 @@ private processSummary(payload) {
                     case [ 'Siren', 'Keypad', 'Bluetooth' ]:
                         // ignore types that don't make sense as a child device
                         break
-                
+
                     default:
                         logError("Unhandled device type ${it.type}")
-                        state.unrecognizedDevices = "true";
+                        state.unrecognizedDevices = 'true'
                 }
             }
 
@@ -486,20 +486,20 @@ private processSummary(payload) {
                 if (it.partition_id == partitionId && zoneList?.find { it.id == zoneid } == null ) {
                     logInfo( "Deleting orphaned device ${it.deviceNetworkId}" )
                     deleteChildDevice(it.deviceNetworkId)
-                }   
+                }
             }
         }
         catch (e) {
-            logError('Error in processSummary(): ${e.message}')
+            logError("Error in processSummary(): ${e.message}")
         }
     }
 }
 
-private createChildDevice(deviceName, zone, partition, partitions) {
-    def dni = "${device.deviceNetworkId}-z${zone.zone_id}"
-    def name = (partitions ? partition.name + ': ' : '') + zone.name
+private void createChildDevice(deviceName, zone, partition, boolean partitions) {
+    String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
+    String name = (partitions ? partition.name + ': ' : '') + zone.name
     try {
-        def currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
+        ChildDeviceWrapper currentchild = getChildDevices()?.find { it.deviceNetworkId == dni }
         if (currentchild == null) {
             logDebug "Creating child device '${deviceName}' dni: '${dni}'"
             currentchild = addChildDevice('dcaton-qolsysiqpanel', deviceName, dni, [name: deviceName /* "${zone.name}" */, label: name, isComponent: true])
@@ -508,26 +508,28 @@ private createChildDevice(deviceName, zone, partition, partitions) {
             logDebug "Updating existing child device '${deviceName}' dni: '${dni}'"
         }
         currentchild.label = name
-        currentchild.updateDataValue('id', zone.id.toString())
-        currentchild.updateDataValue('type', zone.type)
-        currentchild.updateDataValue('group', zone.group)
-        currentchild.updateDataValue('zone_id', zone.zone_id.toString())
-        currentchild.updateDataValue('zone_physical_type', zone.zone_physical_type.toString())
-        currentchild.updateDataValue('zone_alarm_type', zone.zone_alarm_type.toString())
-        currentchild.updateDataValue('zone_type', zone.zone_type.toString())
-        currentchild.updateDataValue('partition_id', zone.partition_id.toString() + " (${partition.name})")
-        currentchild.ProcessZoneUpdate(zone)
+        currentchild.with {
+            updateDataValue('id', zone.id.toString())
+            updateDataValue('type', zone.type)
+            updateDataValue('group', zone.group)
+            updateDataValue('zone_id', zone.zone_id.toString())
+            updateDataValue('zone_physical_type', zone.zone_physical_type.toString())
+            updateDataValue('zone_alarm_type', zone.zone_alarm_type.toString())
+            updateDataValue('zone_type', zone.zone_type.toString())
+            updateDataValue('partition_id', zone.partition_id.toString() + " (${partition.name})")
+            ProcessZoneUpdate(zone)
+        }
     }
     catch (e) {
         logError("Error creating or updating child device '${dni}': ${e.message}")
     }
 }
 
-private processZoneActive(zone) {
+private void processZoneActive(zone) {
     logTrace 'processZoneActive'
-    def dni = "${device.deviceNetworkId}-z${zone.zone_id}"
+    String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
     try {
-        def currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
+        ChildDeviceWrapper currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
         currentchild.ProcessZoneActive(zone)
     }
     catch (e) {
@@ -536,11 +538,11 @@ private processZoneActive(zone) {
     }
 }
 
-private processZoneUpdate(zone) {
+private void processZoneUpdate(zone) {
     logTrace 'processZoneUpdate'
-    def dni = "${device.deviceNetworkId}-z${zone.zone_id}"
+    String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
     try {
-        def currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
+        ChildDeviceWrapper currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
         currentchild.ProcessZoneUpdate(zone)
     }
     catch (e) {
@@ -549,11 +551,11 @@ private processZoneUpdate(zone) {
     }
 }
 
-private processEvent( Variable, Value ) {
-    if ( state."${ Variable }" != Value ) {
-        state."${ Variable }" = Value
-        logDebug( "Event: ${ Variable } = ${ Value }" )
-        sendEvent( name: "${ Variable }", value: Value, isStateChanged: true )
+private void processEvent( String variable, def value ) {
+    if ( state."${ variable }" != value ) {
+        state."${ variable }" = value
+        logDebug( "Event: ${ variable } = ${ value }" )
+        sendEvent( name: "${ variable }", value: value, isStateChanged: true )
     }
 }
 
@@ -561,7 +563,7 @@ private processEvent( Variable, Value ) {
 // Logging helpers
 //
 
-def logsOff() {
+void logsOff() {
     log.warn 'logging disabled...'
     device.updateSetting('logInfo', [value:'false', type:'bool'])
     device.updateSetting('logWarn', [value:'false', type:'bool'])
