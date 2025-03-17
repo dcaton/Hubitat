@@ -24,6 +24,9 @@
 *   Change Log:
 *   2021-11-24: Initial version
 *   2021-12-16: Better handling and retry logic if panel is unreachable
+    2025-xx-xx: General code cleanup
+                Correctly handle sensors that are renamed at panel
+                Delete virtual device if physical device removed from panel
 *
 */
 
@@ -90,7 +93,7 @@ preferences {
 @Field static final String drvShock = 'QolSys IQ Takeover Module'
 
 @Field static String partialMessage = ''
-@Field static Integer checkInterval = 600
+@Field static Integer socketReadTimeout = 4  // in minutes
 
 //
 // Commands
@@ -122,7 +125,9 @@ void configure() {
 void initialize() {
     logTrace('initialize()')
     unschedule()
+    logDebug('Attempting to close socket if it is open...')
     interfaces.rawSocket.close()
+    logDebug('Clearing driver state...')
     state.clear()
     partialMessage = ''
 
@@ -137,8 +142,8 @@ void initialize() {
     }
 
     try {
-        logTrace("attempting to connect to panel at ${panelip}...")
-        interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (checkInterval * 1000), bufferSize: 10240], panelip, 12345 )
+        logTrace("Attempting to connect to panel at ${panelip}...")
+        interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (socketReadTimeout * 60000), bufferSize: 10240], panelip, 12345 )
         state.lastMessageReceivedAt = now()
         refresh()
     }
@@ -391,10 +396,10 @@ void parse(String message) {
 
 /* groovylint-disable-next-line UnusedPrivateMethod */
 private void connectionCheck() {
-    def now = now()
+    long now = now()
 
     if ( now - state.lastMessageReceivedAt > 10000) {
-        logWarn("no messages received in ${(now - state.lastMessageReceivedAt) / 60000} minutes, reconnecting...")
+        logWarn("Connection check: no messages received in ${(now - state.lastMessageReceivedAt) / 60000} minutes, reconnecting...")
         initialize()
     }
     else {
@@ -478,12 +483,15 @@ private void processSummary(payload) {
 
             def partitionId = it.partition_id
 
-            logDebug( 'Searching for orphaned devices...' )
+            logDebug( "Searching for orphaned devices in partition ${partitionId}..." )
 
             getChildDevices().each {
-                def zoneid = it.id
 
-                if (it.partition_id == partitionId && zoneList?.find { it.id == zoneid } == null ) {
+                def deviceToCheckzoneid = it.getDataValue("zone_id")
+                def deviceToCheckpartitionid = it.getDataValue("partition_id").substring(0,1)
+                def matchingDeviceInUpdatedZoneList = zoneList.find { it.zone_id.toString() == deviceToCheckzoneid && it.partition_id.toString() == deviceToCheckpartitionid}
+
+                if ( matchingDeviceInUpdatedZoneList == null ) {
                     logInfo( "Deleting orphaned device ${it.deviceNetworkId}" )
                     deleteChildDevice(it.deviceNetworkId)
                 }
@@ -516,7 +524,8 @@ private void createChildDevice(deviceName, zone, partition, boolean partitions) 
             updateDataValue('zone_physical_type', zone.zone_physical_type.toString())
             updateDataValue('zone_alarm_type', zone.zone_alarm_type.toString())
             updateDataValue('zone_type', zone.zone_type.toString())
-            updateDataValue('partition_id', zone.partition_id.toString() + " (${partition.name})")
+            updateDataValue('partition_id', zone.partition_id.toString())
+            updateDataValue('partition_name', partition.name)
             ProcessZoneUpdate(zone)
         }
     }
