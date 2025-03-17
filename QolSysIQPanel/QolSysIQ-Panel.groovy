@@ -24,9 +24,6 @@
 *   Change Log:
 *   2021-11-24: Initial version
 *   2021-12-16: Better handling and retry logic if panel is unreachable
-    2025-xx-xx: General code cleanup
-                Correctly handle sensors that are renamed at panel
-                Delete virtual device if physical device removed from panel
 *
 */
 
@@ -66,6 +63,8 @@ metadata {
         attribute 'Error_Partition_1', 'text'
         attribute 'Error_Partition_2', 'text'
         attribute 'Error_Partition_3', 'text'
+        
+        attribute 'connected', 'enum', ['connected', 'not connected']
     }
 }
 
@@ -123,33 +122,35 @@ void configure() {
 }
 
 void initialize() {
-    logTrace('initialize()')
-    unschedule()
-    logDebug('Attempting to close socket if it is open...')
-    interfaces.rawSocket.close()
-    logDebug('Clearing driver state...')
-    state.clear()
-    partialMessage = ''
-
-    if (!panelip) {
-        logError 'IP Address of alarm panel not configured'
-        return
-    }
-
-    if (!accessToken) {
-        logError 'Alarm panel access token not configured.'
-        return
-    }
-
     try {
-        logTrace("Attempting to connect to panel at ${panelip}...")
-        interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (socketReadTimeout * 60000), bufferSize: 10240], panelip, 12345 )
-        state.lastMessageReceivedAt = now()
-        refresh()
+        logTrace('initialize()')
+        unschedule()
+        logDebug('initialize(): Attempting to close socket if it is open...')
+        interfaces.rawSocket.close()
+        processEvent( 'connected', 'not connected' )
+        logDebug('initialize(): Clearing driver state...')
+        state.clear()
+        partialMessage = ''
+
+        if (!panelip) {
+            logError 'initialize(): IP Address of alarm panel not configured'
+        }
+        else if (!accessToken) {
+            logError 'initialize(): Alarm panel access token not configured.'
+        }
+        else {
+            logTrace("initialize(): Attempting to connect to panel at ${panelip}...")
+            interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (socketReadTimeout * 60000), bufferSize: 10240], panelip, 12345 )
+            state.lastMessageReceivedAt = now()
+            refresh()
+        }
     }
     catch (e) {
-        logError( "${panelip} initialize error: ${e.message}" )
+        logError( "initialize(): ${panelip} initialize error: ${e.message}, trying again in 1 minute..." )
         runIn(60, 'initialize')
+    }
+    finally {
+        logTrace('exit initialize()')
     }
 }
 
@@ -259,138 +260,151 @@ void socketStatus(String message) {
         // Probably a bug in the rawsocket code.  Close the connection to prevent
         // the log being flooded with error messages.
         // Note: this may no longer be needed
+        processEvent( 'connected', 'not connected' )
         interfaces.rawSocket.close()
         logError( "socketStatus: ${message}")
         logError( 'Closing connection to alarm panel' )
         initialize()
     }
     else if (message == 'receive error: Read timed out') {
-        logWarn("no messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, sending INFO command to panel to test connection...")
+        logInfo("no messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, sending INFO command to panel to test connection...")
         refresh()
         runIn(10, 'connectionCheck')
     }
     else {
-        logError( "socketStatus: ${message}")
-        initialize()
+        logError( "socketStatus: ${message}, running initialize() in 1 minute...")
+        processEvent( 'connected', 'not connected' )
+        runIn(60, 'initialize')
     }
 }
 
 void parse(String message) {
-    state.lastMessageReceived = new Date(now()).toString()
-    state.lastMessageReceivedAt = now()
+    logTrace('parse()')
+    processEvent( 'connected', 'connected' )
+    
+    try {
+        state.lastMessageReceived = new Date(now()).toString()
+        state.lastMessageReceivedAt = now()
 
-    if (message.length() > 0) {
-        logDebug("parse() received ${message.length()} bytes : '${message}'")
+        if (message.length() > 0) {
+            logDebug("parse() received ${message.length()} bytes : '${message}'")
 
-        if (message.length() >= 3 && message.substring(0, 3) == 'ACK') {
-            // This is sent by the panel when a command has been received
-            partialMessage = ''
-            logDebug("'ACK' received")
-        }
-        else {
-            if (partialMessage != null && partialMessage.length() > 0) {
-                message = partialMessage + message
+            if (message.length() >= 3 && message.substring(0, 3) == 'ACK') {
+                // This is sent by the panel when a command has been received
+                partialMessage = ''
+                logDebug("'ACK' received")
             }
-
-            try {
-                Object payload = new JsonSlurper().parseText(message)
-                logDebug("json: ${payload}")
-
-                switch (payload.event) {
-                    case 'INFO':
-                        switch (payload.info_type) {
-                            case 'SUMMARY':
-                                logInfo('Summary Info received')
-                                processSummary(payload)
-                                break
-                            default:
-                                logError("Unhandled INFO message: ${message}")
-                                break
-                        }
-
-                        break
-
-                    case 'ZONE_EVENT':
-                        switch (payload.zone_event_type) {
-                            case 'ZONE_UPDATE':
-                                logInfo("Zone update received: ${payload.zone.name}, ${payload.zone.status}")
-                                processZoneUpdate(payload.zone)
-                                break
-                            case 'ZONE_ACTIVE':
-                                logInfo("Zone active received: ${payload.zone.zone_id}, ${payload.zone.status}")
-                                processZoneActive(payload.zone)
-                                break
-                            default:
-                                logError("Unhandled ZONE_EVENT message: ${message}")
-                                break
-                        }
-                        break
-
-                    case'ARMING':
-                        logInfo("Arming event received: ${payload.arming_type}")
-                        processEvent( "Alarm_Mode_Partition_${payload.partition_id}", payload.arming_type )
-                        switch (payload.arming_type) {
-                            case 'EXIT_DELAY':
-                                processEvent( "Exit_Delay_Partition_${payload.partition_id}", payload.delay )
-                                break
-
-                            case 'ENTRY_DELAY':
-                                processEvent( "Entry_Delay_Partition_${payload.partition_id}", payload.delay )
-                                break
-
-                            case 'DISARM':
-                                processEvent( "Entry_Delay_Partition_${payload.partition_id}", 0 )
-                                if (payload.partition_id == 0) {
-                                    sendEvent( name: 'presence', value: 'present', isStateChanged: true )
-                                }
-                                break
-
-                            case 'ARM_STAY':
-                                break
-
-                            case 'ARM_AWAY':
-                                processEvent( "Exit_Delay_Partition_${payload.partition_id}", 0 )
-                                if (payload.partition_id == 0) {
-                                    sendEvent( name: 'presence', value: 'not present', isStateChanged: true )
-                                }
-                                break
-
-                            default:
-                                logError("Unhandled ARMING message: ${message}")
-                                break
-                        }
-                        break
-
-                    case'ALARM':
-                        logInfo("Alarm event received: ${payload.alarm_type}")
-
-                        // payload.alarm_type can be "POLICE", "FIRE" OR "AUXILIARY"
-                        // If it's empty, append "INTRUSION"
-
-                        // Note there is no distinction made between an audible and silent alarm,
-                        // or an alarm initiated by a sensor vs an alarm initiated on the keypad
-
-                        processEvent( "Alarm_Mode_Partition_${payload.partition_id}", 'ALARM_' + payload.alarm_type )
-                        break
-
-                    case 'ERROR':
-                        logInfo("Error received: '${payload.error_type}' '${payload.description}'")
-                        processEvent( "Error_Partition_${payload.partition_id}", "${payload.error_type}: ${payload.description}" )
-                        break
-
-                    default:
-                        logError("Unhandled message: ${message}")
+            else {
+                if (partialMessage != null && partialMessage.length() > 0) {
+                    message = partialMessage + message
                 }
 
-                partialMessage = ''
-            }
-            catch (ex) {
-                // can't parse into json, probably a partial message that fills the socket buffer
-                logError(ex.toString())
-                logDebug("storing partial message '${message}'")
-                partialMessage = message
+                try {
+                    Object payload = new JsonSlurper().parseText(message)
+                    logDebug("json: ${payload}")
+
+                    switch (payload.event) {
+                        case 'INFO':
+                            switch (payload.info_type) {
+                                case 'SUMMARY':
+                                    logInfo('Summary Info received')
+                                    processSummary(payload)
+                                    break
+                                default:
+                                    logError("Unhandled INFO message: ${message}")
+                                    break
+                            }
+
+                            break
+
+                        case 'ZONE_EVENT':
+                            switch (payload.zone_event_type) {
+                                case 'ZONE_UPDATE':
+                                    logInfo("Zone update received: ${payload.zone.name}, ${payload.zone.status}")
+                                    processZoneUpdate(payload.zone)
+                                    break
+                                case 'ZONE_ACTIVE':
+                                    logInfo("Zone active received: ${payload.zone.zone_id}, ${payload.zone.status}")
+                                    processZoneActive(payload.zone)
+                                    break
+                                default:
+                                    logError("Unhandled ZONE_EVENT message: ${message}")
+                                    break
+                            }
+                            break
+
+                        case'ARMING':
+                            logInfo("Arming event received: ${payload.arming_type}")
+                            processEvent( "Alarm_Mode_Partition_${payload.partition_id}", payload.arming_type )
+                            switch (payload.arming_type) {
+                                case 'EXIT_DELAY':
+                                    processEvent( "Exit_Delay_Partition_${payload.partition_id}", payload.delay )
+                                    break
+
+                                case 'ENTRY_DELAY':
+                                    processEvent( "Entry_Delay_Partition_${payload.partition_id}", payload.delay )
+                                    break
+
+                                case 'DISARM':
+                                    processEvent( "Entry_Delay_Partition_${payload.partition_id}", 0 )
+                                    if (payload.partition_id == 0) {
+                                        sendEvent( name: 'presence', value: 'present', isStateChanged: true )
+                                    }
+                                    break
+
+                                case 'ARM_STAY':
+                                    break
+
+                                case 'ARM_AWAY':
+                                    processEvent( "Exit_Delay_Partition_${payload.partition_id}", 0 )
+                                    if (payload.partition_id == 0) {
+                                        sendEvent( name: 'presence', value: 'not present', isStateChanged: true )
+                                    }
+                                    break
+
+                                default:
+                                    logError("Unhandled ARMING message: ${message}")
+                                    break
+                            }
+                            break
+
+                        case'ALARM':
+                            logInfo("Alarm event received: ${payload.alarm_type}")
+
+                            // payload.alarm_type can be "POLICE", "FIRE" OR "AUXILIARY"
+                            // If it's empty, append "INTRUSION"
+
+                            // Note there is no distinction made between an audible and silent alarm,
+                            // or an alarm initiated by a sensor vs an alarm initiated on the keypad
+
+                            processEvent( "Alarm_Mode_Partition_${payload.partition_id}", 'ALARM_' + payload.alarm_type )
+                            break
+
+                        case 'ERROR':
+                            logInfo("Error received: '${payload.error_type}' '${payload.description}'")
+                            processEvent( "Error_Partition_${payload.partition_id}", "${payload.error_type}: ${payload.description}" )
+                            break
+
+                        default:
+                            logError("Unhandled message: ${message}")
+                    }
+
+                    partialMessage = ''
+                }
+                catch (ex) {
+                    // can't parse into json, probably a partial message that fills the socket buffer
+                    logError(ex.toString())
+                    logDebug("storing partial message '${message}'")
+                    partialMessage = message
+                }
             }
         }
+    }
+    catch (e) {
+        logError("exception in parse(): {e.toString()}")
+    }
+    finally {
+        logTrace('exit parse()')
     }
 }
 
@@ -561,11 +575,7 @@ private void processZoneUpdate(zone) {
 }
 
 private void processEvent( String variable, def value ) {
-    if ( state."${ variable }" != value ) {
-        state."${ variable }" = value
-        logDebug( "Event: ${ variable } = ${ value }" )
-        sendEvent( name: "${ variable }", value: value, isStateChanged: true )
-    }
+    sendEvent( name: "${ variable }", value: value )
 }
 
 //
