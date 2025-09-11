@@ -63,7 +63,7 @@ metadata {
         attribute 'Error_Partition_1', 'text'
         attribute 'Error_Partition_2', 'text'
         attribute 'Error_Partition_3', 'text'
-        
+
         attribute 'connected', 'enum', ['connected', 'not connected']
     }
 }
@@ -281,7 +281,7 @@ void socketStatus(String message) {
 void parse(String message) {
     logTrace('parse()')
     processEvent( 'connected', 'connected' )
-    
+
     try {
         state.lastMessageReceived = new Date(now()).toString()
         state.lastMessageReceivedAt = now()
@@ -296,6 +296,7 @@ void parse(String message) {
             }
             else {
                 if (partialMessage != null && partialMessage.length() > 0) {
+                    /* groovylint-disable-next-line ParameterReassignment */
                     message = partialMessage + message
                 }
 
@@ -401,7 +402,7 @@ void parse(String message) {
         }
     }
     catch (e) {
-        logError("exception in parse(): {e.toString()}")
+        logError("exception in parse(): ${e}")
     }
     finally {
         logTrace('exit parse()')
@@ -430,7 +431,7 @@ private void sendCommand(String s) {
     interfaces.rawSocket.sendMessage(s)
 }
 
-private void processSummary(payload) {
+private void processSummary(Object payload) {
     logTrace 'processSummary'
 
     updateDataValue( 'Partitions', payload.partition_list.size().toString() )
@@ -444,45 +445,45 @@ private void processSummary(payload) {
             updateDataValue( "Partition ${it.partition_id} Name", it.name )
             state.unrecognizedDevices = 'false'
 
-            def partition = it
-            def zoneList = it.zone_list
+            Map partition = it
+            List zoneList = it.zone_list
 
             zoneList.each {
                 switch (it.type) {
                     case [ 'Door_Window', 'Tilt', 'Doorbell' ]:
-                        createChildDevice( drvDoorWindow, it, partition, partitions )
+                        createOrUpdateChildDevice( drvDoorWindow, it, partition, partitions )
                         break
 
                     case [ 'GlassBreak', 'Panel Glass Break' ]:
-                        createChildDevice( drvGlass, it, partition, partitions )
+                        createOrUpdateChildDevice( drvGlass, it, partition, partitions )
                         break
 
                     case [ 'SmokeDetector', 'Smoke_M', 'Heat' ]:
-                        createChildDevice( drvSmoke, it, partition, partitions )
+                        createOrUpdateChildDevice( drvSmoke, it, partition, partitions )
                         break
 
                     case 'CODetector':
-                        createChildDevice( drvCO, it, partition, partitions )
+                        createOrUpdateChildDevice( drvCO, it, partition, partitions )
                         break
 
                     case [ 'Motion', 'Panel Motion' ]:
-                        createChildDevice( drvMotion, it, partition, partitions )
+                        createOrUpdateChildDevice( drvMotion, it, partition, partitions )
                         break
 
                     case 'Water':
-                        createChildDevice( drvWater, it, partition, partitions )
+                        createOrUpdateChildDevice( drvWater, it, partition, partitions )
                         break
 
                     case 'Auxiliary Pendant':
-                        createChildDevice( drvPendant, it, partition, partitions )
+                        createOrUpdateChildDevice( drvPendant, it, partition, partitions )
                         break
 
                     case 'TakeoverModule':
-                        createChildDevice( drvTakeover, it, partition, partitions )
+                        createOrUpdateChildDevice( drvTakeover, it, partition, partitions )
                         break
 
                     case 'Shock':
-                        createChildDevice( drvShock, it, partition, partitions )
+                        createOrUpdateChildDevice( drvShock, it, partition, partitions )
                         break
 
                     case [ 'Siren', 'Keypad', 'Bluetooth' ]:
@@ -495,15 +496,14 @@ private void processSummary(payload) {
                 }
             }
 
-            def partitionId = it.partition_id
+            int partitionId = it.partition_id
 
             logDebug( "Searching for orphaned devices in partition ${partitionId}..." )
 
             getChildDevices().each {
-
-                def deviceToCheckzoneid = it.getDataValue("zone_id")
-                def deviceToCheckpartitionid = it.getDataValue("partition_id").substring(0,1)
-                def matchingDeviceInUpdatedZoneList = zoneList.find { it.zone_id.toString() == deviceToCheckzoneid && it.partition_id.toString() == deviceToCheckpartitionid}
+                String deviceToCheckzoneid = it.getDataValue('zone_id')
+                String deviceToCheckpartitionid = it.getDataValue('partition_id').substring(0, 1)
+                Object matchingDeviceInUpdatedZoneList = zoneList.find { it.zone_id.toString() == deviceToCheckzoneid && it.partition_id.toString() == deviceToCheckpartitionid }
 
                 if ( matchingDeviceInUpdatedZoneList == null ) {
                     logInfo( "Deleting orphaned device ${it.deviceNetworkId}" )
@@ -517,7 +517,7 @@ private void processSummary(payload) {
     }
 }
 
-private void createChildDevice(deviceName, zone, partition, boolean partitions) {
+private void createOrUpdateChildDevice(String deviceName, Map zone, Map partition, boolean partitions) {
     String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
     String name = (partitions ? partition.name + ': ' : '') + zone.name
     try {
@@ -548,7 +548,7 @@ private void createChildDevice(deviceName, zone, partition, boolean partitions) 
     }
 }
 
-private void processZoneActive(zone) {
+private void processZoneActive(Map zone) {
     logTrace 'processZoneActive'
     String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
     try {
@@ -561,7 +561,7 @@ private void processZoneActive(zone) {
     }
 }
 
-private void processZoneUpdate(zone) {
+private void processZoneUpdate(Map zone) {
     logTrace 'processZoneUpdate'
     String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
     try {
@@ -574,6 +574,7 @@ private void processZoneUpdate(zone) {
     }
 }
 
+/* groovylint-disable-next-line NoDef */
 private void processEvent( String variable, def value ) {
     sendEvent( name: "${ variable }", value: value )
 }
