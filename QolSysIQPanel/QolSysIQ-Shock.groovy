@@ -24,7 +24,7 @@
 metadata {
     definition(name: 'QolSys IQ Shock Sensor', namespace: 'dcaton-qolsysiqpanel', author: 'Don Caton', component: true, importUrl: 'https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Shock.groovy') {
         capability 'ShockSensor'
-        capability 'TamperAlert'
+        // capability 'TamperAlert'
     }
 }
 
@@ -39,17 +39,11 @@ void installed() {
 void parse(String description) { log.warn 'parse(String description) not implemented' }
 
 void ProcessZoneActive(zone) {
-    if ( state.contact != zone.status ) {
-        state.contact = zone.status
-        sendEvent( name: 'shock', value: zone.status.toLowerCase(), isStateChanged: true )
-    }
+    sendEvent( name: 'shock', value: zone.status.toLowerCase() )
 }
 
 void ProcessZoneUpdate(zone) {
-    // contact - ENUM ["clear", "detected"]
+    // shock - ENUM ["clear", "detected"]
     // tamper - ENUM ["clear", "detected"]
-    if ( state.contact != zone.status ) {
-        state.contact = zone.status
-        sendEvent( name: 'shock', value: zone.status.toLowerCase(), isStateChanged: true )
-    }
+    ProcessZoneActive(zone);
 }

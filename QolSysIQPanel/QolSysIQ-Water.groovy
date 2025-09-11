@@ -24,7 +24,7 @@ metadata {
     definition(name: "QolSys IQ Water Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Water.groovy") {
         
         capability "WaterSensor"
-        capability "TamperAlert"
+        // capability "TamperAlert"
     }
 }
 
@@ -33,7 +33,7 @@ void updated() {
 
 void installed() {
     parent.logInfo "QolSys IQ Water Sensor ${device.deviceNetworkId} installed..."
-	updated()
+    updated()
 }
 
 void parse(String description) { log.warn "parse(String description) not implemented" }
@@ -52,16 +52,15 @@ def ProcessZoneActive(zone){
             water = "unknown (${zone.status})"
     }
         
-    if( state.water != water ){
-        state.water = water;
-        sendEvent( name: "water", value: water, isStateChanged: true )
-    }
+    sendEvent( name: "water", value: water )
 }
 
 def ProcessZoneUpdate(zone){
     // water - ENUM ["wet", "dry"]
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
+    
+/*    
     def tamper;
     
     switch (zone.state) {
@@ -72,8 +71,6 @@ def ProcessZoneUpdate(zone){
             status = "unknown (${zone.state})"
     }
         
-    if( state.tamper != tamper ){
-        state.tamper = tamper;
-        sendEvent( name: "tamper", value: tamper, isStateChanged: true )
-    }
+    sendEvent( name: "tamper", value: tamper )
+*/
 }

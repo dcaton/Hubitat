@@ -24,7 +24,7 @@ metadata {
     definition(name: "QolSys IQ Door/Window Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Contact.groovy") {
         
         capability "ContactSensor"
-        capability "TamperAlert"
+        // capability "TamperAlert"
     }
 }
 
@@ -33,23 +33,17 @@ void updated() {
 
 void installed() {
     parent.logInfo "QolSys IQ Door/Window Sensor ${device.deviceNetworkId} installed..."
-	updated()
+    updated()
 }
 
 void parse(String description) { log.warn "parse(String description) not implemented" }
 
 def ProcessZoneActive(zone){
-    if( state.contact != zone.status ){
-        state.contact = zone.status;
-        sendEvent( name: "contact", value: zone.status.toLowerCase(), isStateChanged: true )
-    }
+    sendEvent( name: "contact", value: zone.status.toLowerCase() )
 }
 
 def ProcessZoneUpdate(zone){
     // contact - ENUM ["closed", "open"]
     // tamper - ENUM ["clear", "detected"]    
-    if( state.contact != zone.status ){
-        state.contact = zone.status;
-        sendEvent( name: "contact", value: zone.status.toLowerCase(), isStateChanged: true )
-    }
+    sendEvent( name: "contact", value: zone.status.toLowerCase() )
 }

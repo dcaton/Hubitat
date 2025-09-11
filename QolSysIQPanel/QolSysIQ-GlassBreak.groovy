@@ -24,7 +24,7 @@ metadata {
     definition(name: "QolSys IQ Glass Break Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-GlassBreak.groovy") {
         
         capability "SoundSensor"
-        capability "TamperAlert"
+        // capability "TamperAlert"
     }
 }
 
@@ -52,16 +52,15 @@ def ProcessZoneActive(zone){
             status = "unknown (${zone.status})"
     }
         
-    if( state.sound != status ){
-        state.sound = status;
-        sendEvent( name: "sound", value: status, isStateChanged: true )
-    }
+    sendEvent( name: "sound", value: status )
 }
 
 def ProcessZoneUpdate(zone){
     // sound - ENUM ["detected", "not detected"]
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
+    
+/*    
     def tamper;
     
     switch (zone.state) {
@@ -72,8 +71,6 @@ def ProcessZoneUpdate(zone){
             status = "unknown (${zone.state})"
     }
         
-    if( state.tamper != tamper ){
-        state.tamper = tamper;
-        sendEvent( name: "tamper", value: tamper, isStateChanged: true )
-    }
+    sendEvent( name: "tamper", value: tamper )
+*/
 }

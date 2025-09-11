@@ -53,15 +53,14 @@ def ProcessZoneActive(zone){
             break;
     }
         
-    if( state.pushed != pushed ){
-        state.pushed = pushed;
-        sendEvent( name: "pushed", value: pushed, isStateChanged: true )
-    }
+    sendEvent( name: "pushed", value: pushed )
 }
 
 def ProcessZoneUpdate(zone){
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
+    
+/*    
     def tamper;
     
     switch (zone.state) {
@@ -72,8 +71,6 @@ def ProcessZoneUpdate(zone){
             status = "unknown (${zone.state})"
     }
         
-    if( state.tamper != tamper ){
-        state.tamper = tamper;
-        sendEvent( name: "tamper", value: tamper, isStateChanged: true )
-    }
+    sendEvent( name: "tamper", value: tamper )
+*/
 }

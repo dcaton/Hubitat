@@ -21,10 +21,9 @@
 */
 
 metadata {
-    definition(name: "QolSys IQ Carbon Monoxide Detector", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-CO.groovy") {
-        
-        capability "CarbonMonoxideDetector"
-        capability "TamperAlert"
+    definition(name: 'QolSys IQ Carbon Monoxide Detector', namespace: 'dcaton-qolsysiqpanel', author: 'Don Caton', component: true, importUrl: 'https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-CO.groovy') {
+        capability 'CarbonMonoxideDetector'
+        // capability "TamperAlert"
     }
 }
 
@@ -36,34 +35,33 @@ void installed() {
     updated()
 }
 
-void parse(String description) { log.warn "parse(String description) not implemented" }
+void parse(String description) { log.warn 'parse(String description) not implemented' }
 
 def ProcessZoneActive(zone){
     def status;
-    
+
     switch (zone.status) {
-        case "Closed":
-            status = "clear";
+        case 'Closed':
+            status = 'clear';
             break;
-        case "Open":
-            status = "detected";
+        case 'Open':
+            status = 'detected';
             break;
         default:
             status = "unknown (${zone.status})"
     }
-        
-    if( state.carbonMonoxide != status ){
-        state.carbonMonoxide = status;
-        sendEvent( name: "carbonMonoxide", value: status, isStateChanged: true )
-    }
+
+    sendEvent( name: 'carbonMonoxide', value: status )
 }
 
 def ProcessZoneUpdate(zone){
     // carbonMonoxide - ENUM ["clear", "tested", "detected"]
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
+
+/*
     def tamper;
-    
+
     switch (zone.state) {
         case 0:
             status = "clear";
@@ -71,9 +69,7 @@ def ProcessZoneUpdate(zone){
         default:
             status = "unknown (${zone.state})"
     }
-        
-    if( state.tamper != tamper ){
-        state.tamper = tamper;
-        sendEvent( name: "tamper", value: tamper, isStateChanged: true )
-    }
+
+    sendEvent( name: "tamper", value: tamper )
+*/
 }

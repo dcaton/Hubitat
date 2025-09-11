@@ -24,7 +24,7 @@ metadata {
     definition(name: "QolSys IQ Motion Sensor", namespace: "dcaton-qolsysiqpanel", author: "Don Caton", component: true, importUrl: "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Motion.groovy") {
         
         capability "MotionSensor"
-        capability "TamperAlert"
+        // capability "TamperAlert"
     }
 }
 
@@ -52,16 +52,15 @@ def ProcessZoneActive(zone){
             motion = "unknown (${zone.status})"
     }
         
-    if( state.motion != motion ){
-        state.motion = motion;
-        sendEvent( name: "motion", value: motion, isStateChanged: true )
-    }
+    sendEvent( name: "motion", value: motion )
 }
 
 def ProcessZoneUpdate(zone){
     // motion - ENUM ["inactive", "active"]
     // tamper - ENUM ["clear", "detected"]
     ProcessZoneActive(zone);
+    
+/*    
     def tamper;
     
     switch (zone.state) {
@@ -72,8 +71,6 @@ def ProcessZoneUpdate(zone){
             status = "unknown (${zone.state})"
     }
         
-    if( state.tamper != tamper ){
-        state.tamper = tamper;
-        sendEvent( name: "tamper", value: tamper, isStateChanged: true )
-    }
+    sendEvent( name: "tamper", value: tamper )
+*/
 }
