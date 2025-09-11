@@ -89,7 +89,7 @@ preferences {
 @Field static final String drvGlass = 'QolSys IQ Glass Break Sensor'
 @Field static final String drvPendant = 'QolSys IQ Auxiliary Pendant'
 @Field static final String drvTakeover = 'QolSys IQ Takeover Module'
-@Field static final String drvShock = 'QolSys IQ Takeover Module'
+@Field static final String drvShock = 'QolSys IQ Shock Sensor'
 
 @Field static String partialMessage = ''
 @Field static Integer socketReadTimeout = 4  // in minutes
