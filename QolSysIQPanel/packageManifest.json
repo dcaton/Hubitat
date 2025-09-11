@@ -71,6 +71,13 @@
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-TakeoverModule.groovy",
       "required": true
+    },
+    {
+      "id": "651b7996-c33c-4b4c-ba3e-d50c73a8d73c",
+      "name": "QolSys IQ Shock Sensor",
+      "namespace": "dcaton-qolsysiqpanel",
+      "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Shock.groovy",
+      "required": true
     }
   ]
 }
