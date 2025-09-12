@@ -94,12 +94,15 @@ preferences {
 @Field static String partialMessage = ''
 @Field static Integer socketReadTimeout = 4  // in minutes
 
+@Field static String driverVersion = '1.1.1'
+
 //
 // Commands
 //
 
 void installed() {
     logTrace('installed()')
+    updateDataValue( 'Version', driverVersion )
     updated()
     runIn(1800, logsOff)
 }
