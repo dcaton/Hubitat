@@ -95,7 +95,7 @@ preferences {
 @Field static String partialMessage = ''
 @Field static Integer socketReadTimeout = 4  // in minutes
 
-@Field static String driverVersion = '1.1.1'
+@Field static String driverVersion = '1.1.2'
 
 //
 // Commands
