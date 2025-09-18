@@ -65,6 +65,7 @@ metadata {
         attribute 'Error_Partition_3', 'text'
 
         attribute 'connected', 'enum', ['connected', 'not connected']
+        attribute 'healthStatus', 'enum', ['offline', 'online']
     }
 }
 
@@ -131,6 +132,7 @@ void initialize() {
         logDebug('initialize(): Attempting to close socket if it is open...')
         interfaces.rawSocket.close()
         processEvent( 'connected', 'not connected' )
+        processEvent( 'healthStatus', 'offline' )
         logDebug('initialize(): Clearing driver state...')
         state.clear()
         partialMessage = ''
@@ -264,6 +266,7 @@ void socketStatus(String message) {
         // the log being flooded with error messages.
         // Note: this may no longer be needed
         processEvent( 'connected', 'not connected' )
+        processEvent( 'healthStatus', 'offline' )
         interfaces.rawSocket.close()
         logError( "socketStatus: ${message}")
         logError( 'Closing connection to alarm panel' )
@@ -277,6 +280,7 @@ void socketStatus(String message) {
     else {
         logError( "socketStatus: ${message}, running initialize() in 1 minute...")
         processEvent( 'connected', 'not connected' )
+        processEvent( 'healthStatus', 'offline' )
         runIn(60, 'initialize')
     }
 }
@@ -284,6 +288,7 @@ void socketStatus(String message) {
 void parse(String message) {
     logTrace('parse()')
     processEvent( 'connected', 'connected' )
+    processEvent( 'healthStatus', 'online' )
 
     try {
         state.lastMessageReceived = new Date(now()).toString()
