@@ -2,11 +2,11 @@
   "packageName": "QolSys IQ Alarm Panel",
   "author": "Don Caton",
   "version": "1.0.1",
-  "betaVersion": "1.1.1",
+  "betaVersion": "1.1.2",
   "minimumHEVersion": "2.3.0.111",
   "dateReleased": "2021-12-16",
   "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/LICENSE",
-  "releaseNotes": "Better handling if panel is offline",
+  "releaseNotes": "Beta version 1.1.2 - Install at your own risk",
   "documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQ2+/README.md",
   "communityLink": "",
   "drivers": [
