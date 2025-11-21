@@ -279,9 +279,34 @@ void socketStatus(String message) {
     }
     else {
         logError( "socketStatus: ${message}, running initialize() in 1 minute...")
-        processEvent( 'connected', 'not connected' )
-        processEvent( 'healthStatus', 'offline' )
-        runIn(60, 'initialize')
+
+        // Try to trap java.lang.InterruptedException execptions that seem to occur
+        // when the hub is very low on memory, this doesn't always work though
+
+        try {
+            interfaces.rawSocket.close()
+            unschedule()
+            runIn(60, 'initialize')
+        }
+        catch (e) {
+            logError("socketStatus exception trying to closd socket and schedule initialize(): ${e.message}")
+            unschedule()
+            runIn(60, 'initialize')
+        }
+
+        try {
+            processEvent( 'connected', 'not connected' )
+        }
+        catch (e1) {
+            logError("socketStatus exception trying to processEvent 'connected': ${e1.message}")
+        }
+
+        try {
+            processEvent( 'healthStatus', 'offline' )
+        }
+        catch (e2) {
+            logError("socketStatus exception trying to processEvent 'healthStatus': ${e2.message}")
+        }
     }
 }
 
