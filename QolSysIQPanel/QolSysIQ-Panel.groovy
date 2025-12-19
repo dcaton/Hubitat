@@ -272,13 +272,13 @@ void socketStatus(String message) {
         logError( 'Closing connection to alarm panel' )
         initialize()
     }
-    else if (message == 'receive error: Read timed out') {
-        logInfo("no messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, sending INFO command to panel to test connection...")
-        refresh()
-        runIn(10, 'connectionCheck')
-    }
     else {
-        logError( "socketStatus: ${message}, running initialize() in 1 minute...")
+        if (message == 'receive error: Read timed out') {
+            logError("socketStatus: read timed out - no messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, running initialize() in 1 minute...")
+        }
+        else {
+            logError( "socketStatus: ${message}, running initialize() in 1 minute...")
+        }
         processEvent( 'connected', 'not connected' )
         processEvent( 'healthStatus', 'offline' )
         unschedule()
