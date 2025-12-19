@@ -74,6 +74,7 @@ preferences {
     input(type: 'string', name: 'accessToken', title: 'Alarm Panel Access Token', description: 'Token obtained from alarm panel', required: true)
     input(type: 'bool', name: 'AllowArmAndDisarm', title: 'Allow HE to send arming and disarming commands', required: false, defaultValue: false)
     input(type: 'bool', name: 'AllowTriggerAlarm', title: 'Allow HE to trigger an alarm condition', required: false, defaultValue: false)
+    input(type: 'number', name: 'socketReadTimeout', title: 'Minutes of inactivity before reconnecting to alarm panel', required: true, defaultValue: 5)
 
     input 'logInfo', 'bool', title: 'Show Info Logs?',  required: false, defaultValue: true
     input 'logWarn', 'bool', title: 'Show Warning Logs?', required: false, defaultValue: true
@@ -93,7 +94,6 @@ preferences {
 @Field static final String drvShock = 'QolSys IQ Shock Sensor'
 
 @Field static String partialMessage = ''
-@Field static Integer socketReadTimeout = 4  // in minutes
 
 @Field static String driverVersion = '1.1.2'
 
@@ -423,19 +423,6 @@ void parse(String message) {
     }
     finally {
         logTrace('exit parse()')
-    }
-}
-
-/* groovylint-disable-next-line UnusedPrivateMethod */
-private void connectionCheck() {
-    long now = now()
-
-    if ( now - state.lastMessageReceivedAt > 10000) {
-        logWarn("Connection check: no messages received in ${(now - state.lastMessageReceivedAt) / 60000} minutes, reconnecting...")
-        initialize()
-    }
-    else {
-        logDebug('connectionCheck ok')
     }
 }
 
