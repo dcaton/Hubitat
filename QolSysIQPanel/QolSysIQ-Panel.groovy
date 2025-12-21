@@ -260,37 +260,34 @@ private String createArmCommand( String partitionId, String armingType, BigDecim
 //
 
 void socketStatus(String message) {
-    if (message == 'receive error: String index out of range: -1') {
-        // This is some error condition that repeats every 15ms.
-        // Probably a bug in the rawsocket code.  Close the connection to prevent
-        // the log being flooded with error messages.
-        // Note: this may no longer be needed
-        processEvent( 'connected', 'not connected' )
-        processEvent( 'healthStatus', 'offline' )
-        interfaces.rawSocket.close()
-        logError( "socketStatus: ${message}")
-        logError( 'Closing connection to alarm panel' )
-        initialize()
-    }
-    else {
-        if (message == 'receive error: Read timed out') {
-            logError("socketStatus: read timed out - no messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, running initialize() in 1 minute...")
+    try {
+        if (message == 'receive error: String index out of range: -1') {
+            // This is some error condition that repeats every 15ms.
+            // Probably a bug in the rawsocket code.  Close the connection to prevent
+            // the log being flooded with error messages.
+            // Note: this may no longer be needed
+            processEvent( 'connected', 'not connected' )
+            processEvent( 'healthStatus', 'offline' )
+            interfaces.rawSocket.close()
+            logError( "socketStatus: ${message}")
+            logError( 'Closing connection to alarm panel' )
+            initialize()
         }
         else {
-            logError( "socketStatus: ${message}, running initialize() in 1 minute...")
-        }
-        processEvent( 'connected', 'not connected' )
-        processEvent( 'healthStatus', 'offline' )
-        unschedule()
-        // Not sure why, but a java.lang.InterruptedException can occur here
-        try {
-            interfaces.rawSocket.close()
+            if (message == 'receive error: Read timed out') {
+                logError("socketStatus: read timed out - no messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, running initialize() in 1 minute...")
+            }
+            else {
+                logError( "socketStatus: ${message}, running initialize() in 1 minute...")
+            }
+            processEvent( 'connected', 'not connected' )
+            processEvent( 'healthStatus', 'offline' )
+            unschedule()
             runIn(60, 'initialize')
         }
-        catch (e) {
-            logError("socketStatus exception: ${e.message}")
-            runIn(60, 'initialize')
-        }
+    }
+    catch (Exception e) {
+        logError("socketStatus exception: ${e}")
     }
 }
 
