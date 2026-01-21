@@ -453,6 +453,7 @@ private void processSummary(Object payload) {
 
             Map partition = it
             List zoneList = it.zone_list
+            List<Integer> ignoreList = []
 
             zoneList.each {
                 switch (it.type) {
@@ -494,12 +495,18 @@ private void processSummary(Object payload) {
 
                     case [ 'Siren', 'Keypad', 'Bluetooth' ]:
                         // ignore types that don't make sense as a child device
+                        ignoreList.add(it.zone_id as Integer)
                         break
 
                     default:
                         logError("Unhandled device type ${it.type}")
+                        // ignore types that aren't handled to prevent further errors
+                        ignoreList.add(it.zone_id as Integer)
                         state.unrecognizedDevices = 'true'
                 }
+
+                logDebug "ignoreList: ${ignoreList}"
+                updateDataValue('ignoreList', ignoreList.toString())
             }
 
             int partitionId = it.partition_id
@@ -554,29 +561,51 @@ private void createOrUpdateChildDevice(String deviceName, Map zone, Map partitio
     }
 }
 
-private void processZoneActive(Map zone) {
-    logTrace 'processZoneActive'
-    String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
-    try {
-        ChildDeviceWrapper currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
-        currentchild.ProcessZoneActive(zone)
+private boolean isIgnoredZone(Integer zoneId) {
+    logTrace "isIgnoredZone zoneId = ${zoneId}"
+    String ignoreListStr = getDataValue('ignoreList')
+
+    if (ignoreListStr == '[]' ) {
+        return false
     }
-    catch (e) {
-        logError("child device ${dni} not found!  Refreshing device list, ${e.message}")
-        refresh()
+    
+    List<Integer> ignoreList = ignoreListStr.replaceAll('[\\[\\]]', '').split(',').collect { it.trim() as Integer }
+
+    if (zoneId in ignoreList) {
+        logDebug "zone id ${zoneId} is in the list of zones to ignore"
+        return true
+    }
+
+    return false
+}
+
+private void processZoneActive(Map zone) {
+    if (!isIgnoredZone(zone.zone_id as Integer)) {
+        logTrace 'processZoneActive'
+        String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
+        try {
+            ChildDeviceWrapper currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
+            currentchild.ProcessZoneActive(zone)
+        }
+        catch (e) {
+            logError("child device ${dni} not found!  Refreshing device list, ${e.message}")
+            refresh()
+        }
     }
 }
 
 private void processZoneUpdate(Map zone) {
-    logTrace 'processZoneUpdate'
-    String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
-    try {
-        ChildDeviceWrapper currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
-        currentchild.ProcessZoneUpdate(zone)
-    }
-    catch (e) {
-        logError("child device ${dni} not found!  Refreshing device list, ${e.message}")
-        refresh()
+    if (!isIgnoredZone(zone.zone_id as Integer)) {
+        logTrace 'processZoneUpdate'
+        String dni = "${device.deviceNetworkId}-z${zone.zone_id}"
+        try {
+            ChildDeviceWrapper currentchild = getChildDevices()?.find { it.deviceNetworkId == dni };
+            currentchild.ProcessZoneUpdate(zone)
+        }
+        catch (e) {
+            logError("child device ${dni} not found!  Refreshing device list, ${e.message}")
+            refresh()
+        }
     }
 }
 
