@@ -1,19 +1,23 @@
 {
   "packageName": "QolSys IQ Alarm Panel",
-  "author": "Don Caton",
-  "version": "1.1.2",
   "minimumHEVersion": "2.3.0.111",
+  "author": "Don Caton",
+  "version": "1.0.1",
+  "betaVersion": "1.1.3",
   "dateReleased": "2021-12-16",
   "licenseFile": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/LICENSE",
-  "releaseNotes": "Better handling if panel is offline",
   "documentationLink": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQ2+/README.md",
-  "communityLink": "",
+  "communityLink": "https://community.hubitat.com/t/release-qolsys-iq-alarm-panel-drivers/85139",
+  "gitHubUrl": "https://github.com/dcaton/Hubitat",
+  "releaseNotes": "Better handling if panel is offline",
+  "betaReleaseNotes": "**Beta version**\n[Version 1.1.3]\n- Better handling if panel is offline\n- Better handling of keypad devices",
   "drivers": [
     {
         "id": "9965491c-86bf-4276-868e-3addaae1f837",
         "name": "QolSys IQ Carbon Monoxide Detector",
         "namespace": "dcaton-qolsysiqpanel",
         "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-CO.groovy",
+        "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-CO.groovy",
         "required": true
       },
     {
@@ -21,6 +25,7 @@
       "name": "QolSys IQ Door/Window Sensor",
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Contact.groovy",
+      "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-Contact.groovy",
       "required": true
     },
     {
@@ -28,6 +33,7 @@
       "name": "QolSys IQ Glass Break Sensor",
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-GlassBreak.groovy",
+      "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-GlassBreak.groovy",
       "required": true
     },
     {
@@ -35,6 +41,7 @@
       "name": "QolSys IQ Motion Sensor",
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Motion.groovy",
+      "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-Motion.groovy",
       "required": true
     },
     {
@@ -42,6 +49,7 @@
       "name": "QolSys IQ Alarm Panel",
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Panel.groovy",
+      "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-Panel.groovy",
       "required": true
     },
     {
@@ -49,6 +57,7 @@
       "name": "QolSys IQ Auxiliary Pendant",
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Pendant.groovy",
+      "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-Pendant.groovy",
       "required": true
     },
     {
@@ -56,6 +65,7 @@
       "name": "QolSys IQ Smoke Detector",
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Smoke.groovy",
+      "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-Smoke.groovy",
       "required": true
     },
     {
@@ -63,6 +73,7 @@
       "name": "QolSys IQ Water Sensor",
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Water.groovy",
+      "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-Water.groovy",
       "required": true
     },
     {
@@ -70,6 +81,7 @@
       "name": "QolSys IQ Takeover Module",
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-TakeoverModule.groovy",
+      "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-TakeoverModule.groovy",
       "required": true
     },
     {
@@ -77,6 +89,7 @@
       "name": "QolSys IQ Shock Sensor",
       "namespace": "dcaton-qolsysiqpanel",
       "location": "https://raw.githubusercontent.com/dcaton/Hubitat/main/QolSysIQPanel/QolSysIQ-Shock.groovy",
+      "betaLocation": "https://raw.githubusercontent.com/dcaton/Hubitat/beta/QolSysIQPanel/QolSysIQ-Shock.groovy",
       "required": true
     }
   ]
