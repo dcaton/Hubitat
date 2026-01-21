@@ -74,7 +74,7 @@ preferences {
     input(type: 'string', name: 'accessToken', title: 'Alarm Panel Access Token', description: 'Token obtained from alarm panel', required: true)
     input(type: 'bool', name: 'AllowArmAndDisarm', title: 'Allow HE to send arming and disarming commands', required: false, defaultValue: false)
     input(type: 'bool', name: 'AllowTriggerAlarm', title: 'Allow HE to trigger an alarm condition', required: false, defaultValue: false)
-    input(type: 'number', name: 'socketReadTimeout', title: 'Minutes of inactivity before reconnecting to alarm panel', required: true, defaultValue: 5)
+    input(type: 'number', name: 'InactivityTimeout', title: 'Minutes of inactivity before reconnecting to alarm panel', required: true, defaultValue: 5)
 
     input 'logInfo', 'bool', title: 'Show Info Logs?',  required: false, defaultValue: true
     input 'logWarn', 'bool', title: 'Show Warning Logs?', required: false, defaultValue: true
@@ -96,6 +96,8 @@ preferences {
 @Field static String partialMessage = ''
 
 @Field static String driverVersion = '1.1.2'
+
+@Field static boolean inInitialize = false
 
 //
 // Commands
@@ -128,11 +130,11 @@ void configure() {
 void initialize() {
     try {
         logTrace('initialize()')
+        inInitialize = true
         unschedule()
         logDebug('initialize(): Attempting to close socket if it is open...')
         interfaces.rawSocket.close()
-        processEvent( 'connected', 'not connected' )
-        processEvent( 'healthStatus', 'offline' )
+        connected(false)
         logDebug('initialize(): Clearing driver state...')
         state.clear()
         partialMessage = ''
@@ -144,8 +146,8 @@ void initialize() {
             logError 'initialize(): Alarm panel access token not configured.'
         }
         else {
-            logTrace("initialize(): Attempting to connect to panel at ${panelip}...")
-            interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (socketReadTimeout * 60000), bufferSize: 10240], panelip, 12345 )
+            logInfo("Connecting to panel at ${panelip}, inactivity timeout set to ${InactivityTimeout} minutes")
+            interfaces.rawSocket.connect([byteInterface: false, secureSocket: true, ignoreSSLIssues: true, convertReceivedDataToString: true, timeout : (InactivityTimeout * 60000), bufferSize: 10240], panelip, 12345 )
             state.lastMessageReceivedAt = now()
             refresh()
         }
@@ -155,6 +157,7 @@ void initialize() {
         runIn(60, 'initialize')
     }
     finally {
+        inInitialize = false;
         logTrace('exit initialize()')
     }
 }
@@ -266,25 +269,21 @@ void socketStatus(String message) {
             // Probably a bug in the rawsocket code.  Close the connection to prevent
             // the log being flooded with error messages.
             // Note: this may no longer be needed
-            processEvent( 'connected', 'not connected' )
-            processEvent( 'healthStatus', 'offline' )
-            interfaces.rawSocket.close()
             logError( "socketStatus: ${message}")
-            logError( 'Closing connection to alarm panel' )
-            initialize()
+        }
+        else if (message == 'receive error: Read timed out') {
+            logWarn("socketStatus: read timed out - no messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, running initialize() in 1 minute...")
+        }
+        else if (message == 'receive error: Socket closed') {
+            if (inInitialize) { return }
+            logWarn("socketStatus: ${message}")
         }
         else {
-            if (message == 'receive error: Read timed out') {
-                logError("socketStatus: read timed out - no messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, running initialize() in 1 minute...")
-            }
-            else {
-                logError( "socketStatus: ${message}, running initialize() in 1 minute...")
-            }
-            processEvent( 'connected', 'not connected' )
-            processEvent( 'healthStatus', 'offline' )
-            unschedule()
-            runIn(60, 'initialize')
+            logError( "socketStatus: ${message}, running initialize() in 1 minute...")
         }
+
+        connected(false)
+        runIn(60, 'initialize')
     }
     catch (Exception e) {
         logError("socketStatus exception: ${e}")
@@ -293,8 +292,7 @@ void socketStatus(String message) {
 
 void parse(String message) {
     logTrace('parse()')
-    processEvent( 'connected', 'connected' )
-    processEvent( 'healthStatus', 'online' )
+    connected(true)
 
     try {
         state.lastMessageReceived = new Date(now()).toString()
@@ -405,6 +403,8 @@ void parse(String message) {
                     }
 
                     partialMessage = ''
+                    // 30 seconds before a socket timeout, send a status request to panel to see if the connection is still alive
+                    runIn((InactivityTimeout * 60) - 30, pingPanel)
                 }
                 catch (ex) {
                     // can't parse into json, probably a partial message that fills the socket buffer
@@ -421,6 +421,11 @@ void parse(String message) {
     finally {
         logTrace('exit parse()')
     }
+}
+
+void pingPanel() {
+    logInfo("No messages received in ${(now() - state.lastMessageReceivedAt) / 60000} minutes, requesting status from panel...")
+    refresh()
 }
 
 //
@@ -572,6 +577,17 @@ private void processZoneUpdate(Map zone) {
     catch (e) {
         logError("child device ${dni} not found!  Refreshing device list, ${e.message}")
         refresh()
+    }
+}
+
+private void connected(boolean connected) {
+    if (connected) {
+        sendEvent( name: 'connected', value: 'connected' )
+        sendEvent( name: 'healthStatus', value: 'online', descriptionText: 'Alarm system is online' )
+    }
+    else {
+        sendEvent( name: 'connected', value: 'not connected' )
+        sendEvent( name: 'healthStatus', value: 'offline', descriptionText: 'Alarm system is offline' )
     }
 }
 
