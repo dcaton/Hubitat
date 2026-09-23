@@ -181,7 +181,7 @@ void armStay( String partitionId, String bypass, BigDecimal userCode = 0 ) {
 void armAway( String partitionId, String bypass, BigDecimal delay, BigDecimal userCode = 0 ) {
     logTrace( "armAway partition ${partitionId}" )
 
-    if (checkAllowArming() && checkSecureArming(partitionId, user_code) && checkPartition(partitionId)) {
+    if (checkAllowArming() && checkSecureArming(partitionId, userCode) && checkPartition(partitionId)) {
         String msg = createArmCommand( partitionId, 'ARM_AWAY', userCode, delay, bypass)
         processEvent( "Error_Partition_${partitionId}", '(No error)' )
         sendCommand(msg)
@@ -243,13 +243,13 @@ private boolean checkPartition(String partitionId) {
 
 /* groovylint-disable-next-line FactoryMethodName */
 private String createArmCommand( String partitionId, String armingType, BigDecimal userCode, BigDecimal delay = 0, String bypass = '' ) {
-    String command = '{ "version": 1, "source": "C4", "action": "ARMING", "nonce": "", "token": "' + accessToken + '", "partition_id":' + partitionId + '", "arming_type": "' + armingType + '", '
+    String command = '{ "version": 1, "source": "C4", "action": "ARMING", "nonce": "", "token": "' + accessToken + '", "partition_id":' + partitionId + ', "arming_type": "' + armingType + '", '
 
     if (userCode) {
         command += '"usercode": "' + userCode + '"'
     }
 
-    if (arming_type == 'ARM_STAY' || arming_type == 'ARM_AWAY' ) {
+    if (armingType == 'ARM_STAY' || armingType == 'ARM_AWAY' ) {
         command += ', "delay": ' + delay + ', "bypass": ' + (bypass == 'Yes' ? 'true' : 'false')
     }
 
