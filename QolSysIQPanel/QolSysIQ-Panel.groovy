@@ -95,7 +95,7 @@ preferences {
 
 @Field static String partialMessage = ''
 
-@Field static String driverVersion = '1.1.2'
+@Field static String driverVersion = '1.1.5'
 
 @Field static boolean inInitialize = false
 
