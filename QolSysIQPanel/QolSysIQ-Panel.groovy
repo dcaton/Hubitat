@@ -157,7 +157,7 @@ void initialize() {
         runIn(60, 'initialize')
     }
     finally {
-        inInitialize = false;
+        inInitialize = false
         logTrace('exit initialize()')
     }
 }
@@ -444,6 +444,8 @@ private void processSummary(Object payload) {
 
     boolean partitions = payload.partition_list.size() > 1
 
+    List<Integer> ignoreList = []
+
     payload.partition_list.each {
         try {
             processEvent( "Alarm_Mode_Partition_${it.partition_id}", it.status )
@@ -453,7 +455,6 @@ private void processSummary(Object payload) {
 
             Map partition = it
             List zoneList = it.zone_list
-            List<Integer> ignoreList = []
 
             zoneList.each {
                 switch (it.type) {
@@ -504,29 +505,38 @@ private void processSummary(Object payload) {
                         ignoreList.add(it.zone_id as Integer)
                         state.unrecognizedDevices = 'true'
                 }
-
-                logDebug "ignoreList: ${ignoreList}"
-                updateDataValue('ignoreList', ignoreList.toString())
-            }
-
-            int partitionId = it.partition_id
-
-            logDebug( "Searching for orphaned devices in partition ${partitionId}..." )
-
-            getChildDevices().each {
-                String deviceToCheckzoneid = it.getDataValue('zone_id')
-                String deviceToCheckpartitionid = it.getDataValue('partition_id').substring(0, 1)
-                Object matchingDeviceInUpdatedZoneList = zoneList.find { it.zone_id.toString() == deviceToCheckzoneid && it.partition_id.toString() == deviceToCheckpartitionid }
-
-                if ( matchingDeviceInUpdatedZoneList == null ) {
-                    logInfo( "Deleting orphaned device ${it.deviceNetworkId}" )
-                    deleteChildDevice(it.deviceNetworkId)
-                }
             }
         }
         catch (e) {
             logError("Error in processSummary(): ${e.message}")
         }
+    }
+
+    logDebug "ignoreList: ${ignoreList}"
+    updateDataValue('ignoreList', ignoreList.toString())
+
+    deleteOrphanedChildDevices(payload)
+}
+
+private void deleteOrphanedChildDevices(Object payload) {
+    if (!payload.partition_list) {
+        // Guard: never delete everything because of an empty or malformed summary.
+        logError('Summary has no partitions, skipping orphan cleanup')
+        return
+    }
+
+    Set<String> validDnis = [] as Set
+    payload.partition_list.each { p ->
+        (p.zone_list ?: []).each { z ->
+            validDnis << "${device.deviceNetworkId}-z${z.zone_id}".toString()
+        }
+    }
+
+    // Collect first, then delete, so the child list is not modified while iterating over it.
+    List orphans = getChildDevices().findAll { !validDnis.contains(it.deviceNetworkId) }
+    orphans.each { child ->
+        logInfo("Deleting orphaned device ${child.deviceNetworkId}")
+        deleteChildDevice(child.deviceNetworkId)
     }
 }
 
@@ -568,7 +578,7 @@ private boolean isIgnoredZone(Integer zoneId) {
     if (ignoreListStr == '[]' ) {
         return false
     }
-    
+
     List<Integer> ignoreList = ignoreListStr.replaceAll('[\\[\\]]', '').split(',').collect { it.trim() as Integer }
 
     if (zoneId in ignoreList) {
